@@ -12,6 +12,8 @@ int main(int argc, char *argv[]) {
     char* buffer = NULL; //store the user input into a buffer
     size_t buffSize = 0;
 
+    int quitProg = 0;
+
     for(;;){
         fprintf(stdout, "deet> ");
 
@@ -37,6 +39,8 @@ int main(int argc, char *argv[]) {
         //split the input based on spaces using strtok
         char* token = strtok(buffer, " ");
 
+        //int argCount = 0;
+
         while(token != NULL){
 
             //compare the strings, if returns 0 its equal
@@ -58,7 +62,12 @@ int main(int argc, char *argv[]) {
                 break;
             } 
             else if(strcmp(token, "quit") == 0){
+                //terminates deet only AFTER killing any processes being debugged
+                //has to wait before they actually terminate before exiting itself
 
+                log_shutdown();
+                quitProg = 1;
+                break;
             }
             else if(strcmp(token, "show") == 0){
 
@@ -99,8 +108,11 @@ int main(int argc, char *argv[]) {
 
             token = strtok(NULL, " "); //get the next token
 
-        }
+        } //end of the infinite while loop
 
+        if(quitProg == 1){
+            break; //if the user typed 'quit' just end
+        }
 
         log_prompt(); // issues another prompt
 
