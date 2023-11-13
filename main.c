@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     for(;;){
         fprintf(stdout, "deet> ");
 
-        getline(&buffer,&buffSize,stdin);   //use get line to get user input, getline reallocs buffer each time its called, no need to free buffer
+        getline(&buffer, &buffSize, stdin);   //use get line to get user input, getline reallocs buffer each time its called, no need to free buffer
 
         log_input(buffer); // read a line of input from user
 
@@ -23,6 +23,12 @@ int main(int argc, char *argv[]) {
             log_prompt(); // issues another prompt
             fflush(stdout);
             continue;
+        }
+
+        //remove the new line from the end of buffer since its causing a new line to be printed before question mark for bogus error
+        size_t length = strlen(buffer);
+        if(buffer[length - 1] == '\n'){
+            buffer[length - 1] = '\0';
         }
 
         //iterate through the buffer to see what the user input and checkk if its a valid input or not
@@ -34,9 +40,26 @@ int main(int argc, char *argv[]) {
         while(token != NULL){
 
             //compare the strings, if returns 0 its equal
-            if(strcmp(token, "quit") == 0){
+            if(strcmp(token, "help") == 0){
+                fprintf(stdout, "Available commands:\n"
+                       "help -- Print this help message\n"
+                       "quit (<=0 args) -- Quit the program\n"
+                       "show (<=1 args) -- Show process info\n"
+                       "run (>=1 args) -- Start a process\n"
+                       "stop (1 args) -- Stop a running process\n"
+                       "cont (1 args) -- Continue a stopped process\n"
+                       "release (1 args) -- Stop tracing a process, allowing it to continue normally\n"
+                       "wait (1-2 args) -- Wait for a process to enter a specified state\n"
+                       "kill (1 args) -- Forcibly terminate a process\n"
+                       "peek (2-3 args) -- Read from the address space of a traced process\n"
+                       "poke (3 args) -- Write to the address space of a traced process\n"
+                       "bt (1 args) -- Show a stack trace for a traced process\n");
 
+                break;
             } 
+            else if(strcmp(token, "quit") == 0){
+
+            }
             else if(strcmp(token, "show") == 0){
 
             }
@@ -74,11 +97,9 @@ int main(int argc, char *argv[]) {
 
             }
 
-            token = strtok(NULL, " ");
+            token = strtok(NULL, " "); //get the next token
 
         }
-
-
 
 
         log_prompt(); // issues another prompt
