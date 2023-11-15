@@ -2,20 +2,24 @@
 #include <stdio.h>
 #include <string.h>
 #include "deet.h"
+#include <sys/types.h>
+#include <unistd.h>
+
 
 int main(int argc, char *argv[]) {
 
     log_startup(); //starts up deets
 
     log_prompt(); // issues a prompt
+    fprintf(stdout, "deet> ");
 
     char* buffer = NULL; //store the user input into a buffer
     size_t buffSize = 0;
 
-    int deetCount = 0;
+    //int deetCount = 0;
 
     for(;;){ //infinite while loop
-        fprintf(stdout, "deet> ");
+       // fprintf(stdout, "deet> ");
 
         getline(&buffer, &buffSize, stdin);   //use get line to get user input, getline reallocs buffer each time its called, no need to free buffer
 
@@ -23,6 +27,7 @@ int main(int argc, char *argv[]) {
 
         if(strcmp(buffer, "\n") == 0){ //if user just enters a blank line
             log_prompt(); // issues another prompt
+            fprintf(stdout, "deet> ");
             fflush(stdout);
             continue;
         }
@@ -63,6 +68,9 @@ int main(int argc, char *argv[]) {
                        "poke (3 args) -- Write to the address space of a traced process\n"
                        "bt (1-2 args) -- Show a stack trace for a traced process\n");
 
+                log_prompt(); // issues another prompt
+                fprintf(stdout, "deet> ");
+                fflush(stdout); 
                 break;
             }
             else if(strcmp(token, "quit") == 0){
@@ -75,6 +83,9 @@ int main(int argc, char *argv[]) {
                      //QUIT ALLOWS NO ARGUMENTS
                     log_error(buffer); //send error msg with token
                     fprintf(stdout, "?\n");
+                    log_prompt(); // issues another prompt
+                    fprintf(stdout, "deet> ");
+                    fflush(stdout); 
                     break;
                 }
                 else{
@@ -90,35 +101,14 @@ int main(int argc, char *argv[]) {
                 if(argCount > 2){
                     log_error(buffer); //send error msg with token
                     fprintf(stdout, "?\n");
+                    log_prompt(); // issues another prompt
+                    fprintf(stdout, "deet> ");
+                    fflush(stdout); 
                     break;
                 }
             }
             else if(strcmp(token, "run") == 0 || runBool == 1){
                 runBool = 1;
-                pid_t p = fork(); 
-
-                if(p == 0){ //child process has been created
-                    dup2(1, 2); //close stdout and redirect to stderr
-                    
-                }
-                else if(p > 0){ //it returned to parent 
-                    
-                     log_state_change(p, PSTATE_NONE, PSTATE_RUNNING, 999); //only log state changes in the parent, 999 is my own status number
-
-                      fprintf(stdout, '0\t');
-                      fprintf(stdout, p);
-                      fprintf(stdout, '\t');
-                      fprintf(stdout, 'T\t');
-                      fprintf(stdout, 'running\t');
-                      fprintf(stdout, buffer);
-
-                    
-                }
-                else if(p < 0){ //unsuccessful, did not create child process and send error
-                    log_error(buffer); //send error msg with token
-                    fprintf(stdout, "?\n");
-                    break;
-                }
                 
             }
             else if(strcmp(token, "stop") == 0 || stopBool == 1){
@@ -149,6 +139,9 @@ int main(int argc, char *argv[]) {
                 //IF None of the commands match the user input, its an error
                 log_error(buffer); //send error msg with token
                 fprintf(stdout, "?\n");
+                log_prompt(); // issues another prompt
+                fprintf(stdout, "deet> ");
+                fflush(stdout); 
                 break;
                 //whenever you get an error always log the error and then question mark
 
@@ -161,6 +154,9 @@ int main(int argc, char *argv[]) {
             if(runBool == 1 && argCount == 2 && token == NULL){ //if run has no arguments, it is an error
                 log_error(buffer); //send error msg with token
                 fprintf(stdout, "?\n");
+                log_prompt(); // issues another prompt
+                fprintf(stdout, "deet> ");
+                fflush(stdout); 
                 break;
             }
 
@@ -168,6 +164,9 @@ int main(int argc, char *argv[]) {
                 if((argCount == 2 && token == NULL) || (argCount == 3 && token != NULL)){ 
                 log_error(buffer); //send error msg with token
                 fprintf(stdout, "?\n");
+                log_prompt(); // issues another prompt
+                fprintf(stdout, "deet> ");
+                fflush(stdout); 
                 break;
                 }
             }
@@ -175,6 +174,9 @@ int main(int argc, char *argv[]) {
                 if((argCount == 2 && token == NULL) || (argCount == 4 && token != NULL)){
                 log_error(buffer); //send error msg with token
                 fprintf(stdout, "?\n");
+                log_prompt(); // issues another prompt
+                fprintf(stdout, "deet> ");
+                fflush(stdout); 
                 break;
                 }
             }
@@ -182,6 +184,9 @@ int main(int argc, char *argv[]) {
                 if((argCount == 2 && token == NULL) || (argCount == 3 && token == NULL) || (argCount == 5 && token != NULL)){ //if peekBool has no arguments, or only 1, or more than 3
                 log_error(buffer); //send error msg with token
                 fprintf(stdout, "?\n");
+                log_prompt(); // issues another prompt
+                fprintf(stdout, "deet> ");
+                fflush(stdout); 
                 break;
                 }
             }
@@ -189,9 +194,47 @@ int main(int argc, char *argv[]) {
                 if((argCount == 2 && token == NULL) || (argCount == 3 && token == NULL) || (argCount == 4 && token == NULL) || (argCount == 5 && token != NULL)){ //if wait has no arguments, or less than 3, or more than 3 argument
                 log_error(buffer); //send error msg with token
                 fprintf(stdout, "?\n");
+                log_prompt(); // issues another prompt
+                fprintf(stdout, "deet> ");
+                fflush(stdout); 
                 break;
                 }
             }
+
+            if(runBool == 1 && token == NULL){ //only if run arguments are valid
+               pid_t p = fork(); 
+                //int p = 1;
+
+                if(p == 0){ //child process has been created
+                    dup2(2, 1); //close stdout and redirect to stderr
+
+                    //exit
+                    
+                }
+                if(p > 0){ //it returned to parent 
+                    
+                      log_state_change(p, PSTATE_NONE, PSTATE_RUNNING, 999); //only log state changes in the parent, 999 is my own status number
+
+                      fprintf(stdout, "0\t");
+                      fprintf(stdout, "%d", (int)p);
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "T\t");
+                      fprintf(stdout, "running\t");
+                      fprintf(stdout, "%s\n", buffer);
+
+                      log_prompt(); // issues another prompt
+                     fprintf(stdout, "deet> ");
+                     fflush(stdout); 
+
+                     // waitpid
+
+                }
+                // else if(p < 0){ //unsuccessful, did not create child process and send error
+                //     log_error(buffer); //send error msg with token
+                //     fprintf(stdout, "?\n");
+                //     break;
+                // }
+           }
            
 
         } //end of the infinite while loop
@@ -200,9 +243,9 @@ int main(int argc, char *argv[]) {
             break; //if the user typed 'quit' just end
         }
 
-        log_prompt(); // issues another prompt
+        // log_prompt(); // issues another prompt
 
-        fflush(stdout); //fflush the stdout after every time the user prints something
+        //fflush(stdout); //fflush the stdout after every time the user prints something
 
         //DO RUN first after help
         //the way run works is that you have a main loop that continuously loops and prints deet until next user input
@@ -243,7 +286,6 @@ int main(int argc, char *argv[]) {
         //literally just tell execcvp to turn itself into an echo command
         //it takes in strings and you just tell it 'turn into echo' with all the arguments behind it
 
-        //man pages 
     }
 
 
