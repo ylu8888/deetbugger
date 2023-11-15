@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
                 //IF None of the commands match the user input, its an error
                 log_error(buffer); //send error msg with token
                 fprintf(stdout, "?\n");
-
+                break;
                 //whenever you get an error always log the error and then question mark
 
             }
@@ -138,29 +138,29 @@ int main(int argc, char *argv[]) {
                 break;
             }
 
-            if(stopBool == 1){ //if stop has no arguments, error
-                if((argCount == 2 && token == NULL) || (argCount == 3 && token != NULL)){ //if stop has no arguments, or more than 1 argument
+            if(stopBool == 1 || contBool == 1 || releaseBool == 1 || killBool == 1){ //if stop, cont, release, kill have no arguments, or more than 1 argument
+                if((argCount == 2 && token == NULL) || (argCount == 3 && token != NULL)){ 
                 log_error(buffer); //send error msg with token
                 fprintf(stdout, "?\n");
                 break;
                 }
             }
-            if(contBool == 1){ //if stop has no arguments, error
-                if((argCount == 2 && token == NULL) || (argCount == 3 && token != NULL)){ //if stop has no arguments, or more than 1 argument
+            if(waitBool == 1 || btBool == 1){ //if wait has no arguments, or more than 2 argument
+                if((argCount == 2 && token == NULL) || (argCount == 4 && token != NULL)){
                 log_error(buffer); //send error msg with token
                 fprintf(stdout, "?\n");
                 break;
                 }
             }
-            if(releaseBool == 1){ //if stop has no arguments, error
-                if((argCount == 2 && token == NULL) || (argCount == 3 && token != NULL)){ //if stop has no arguments, or more than 1 argument
+            if(peekBool == 1){
+                if((argCount == 2 && token == NULL) || (argCount == 3 && token == NULL) || (argCount == 5 && token != NULL)){ //if peekBool has no arguments, or only 1, or more than 3
                 log_error(buffer); //send error msg with token
                 fprintf(stdout, "?\n");
                 break;
                 }
             }
-            if(killBool == 1){ //if stop has no arguments, error
-                if((argCount == 2 && token == NULL) || (argCount == 3 && token != NULL)){ //if stop has no arguments, or more than 1 argument
+            if(pokeBool == 1){
+                if((argCount == 2 && token == NULL) || (argCount == 3 && token == NULL) || (argCount == 4 && token == NULL) || (argCount == 5 && token != NULL)){ //if wait has no arguments, or less than 3, or more than 3 argument
                 log_error(buffer); //send error msg with token
                 fprintf(stdout, "?\n");
                 break;
