@@ -177,6 +177,45 @@ int main(int argc, char *argv[]) {
         log_prompt(); // issues another prompt
 
         fflush(stdout); //fflush the stdout after every time the user prints something
+
+        //DO RUN first after help
+        //the way run works is that you have a main loop that continuously loops and prints deep until next user input
+        //if user types run, it needs to split itself into 2 processes
+        //one continues the main while loop with prompt deet
+        //2nd one becomes the child process
+        //takes in a bunch of strings and those are copied into a new command 
+        //if you went itno command prompt without running deet, and run echo abc
+        //echo is a built in command that prints whatever comes after it
+        //echo abc will print abc into terminal
+        //sleep is another command that makes the terminal sleep for a couple seconds
+        //convert a process to another process, using execcvp()
+        //dup2, ptrace, and then execcvp in that order exactly
+        
+        //Signal stuff:
+        //fork you have a process A and fork just forks the processs
+        //it basically creates a child process
+        //fork is a method that you can call inside your program
+        //its a method inside of package
+        //search the man pages (man fork) to see documentation
+        //fork takes in nothing and outputs a pid_t
+        //you fork it, get a pid (process id) if the pid (need to check what it can return and then condition on all of those)
+        //if pid == 0, then its a child process otherwise if less than 0,
+        //if pid > 0 then its a parent process 
+        //the moment u fork, the process input creates a child input, and the child does whatever sleep/echo/sample prog is suppose to do
+        // DUP2 is basically redirecting input (read man pages)
+        //redirect stdout/stderr (make sure you test it by redirecting input and see if it goes to right place)
+        // ptrace() next time you call execcvp() or any exec command, hand control over to parent process
+        //ptrace has alot of commands, the important one is traceMe()
+        //its from a child process, the child process tells the parent process "trace me"
+        //the next time execcvp it hands over control to the parent process
+        //by handing over control, it means the parent will get a signal that tells it that somethign interseting has happened
+        //and the child process will stop itself and the parent will be notified that the child has stopped
+        //once the child process is done, you can do stuff now like in the debugger
+        //execvp() he talks aobut it in class and how they dont return
+        //dont do anything after execcvp gets called
+        //just turn the process into something else and it cant run any commands that you put directly underneath it
+        //literally just tell execcvp to turn itself into an echo command
+        //it takes in strings and you just tell it 'turn into echo' with all the arguments behind it
     }
 
 
