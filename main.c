@@ -12,6 +12,7 @@ int main(int argc, char *argv[]) {
     char* buffer = NULL; //store the user input into a buffer
     size_t buffSize = 0;
 
+    int deetCount = 0;
 
     for(;;){ //infinite while loop
         fprintf(stdout, "deet> ");
@@ -94,6 +95,31 @@ int main(int argc, char *argv[]) {
             }
             else if(strcmp(token, "run") == 0 || runBool == 1){
                 runBool = 1;
+                pid_t p = fork(); 
+
+                if(p == 0){ //child process has been created
+                    dup2(1, 2); //close stdout and redirect to stderr
+                    
+                }
+                else if(p > 0){ //it returned to parent 
+                    
+                     log_state_change(p, PSTATE_NONE, PSTATE_RUNNING, 999); //only log state changes in the parent, 999 is my own status number
+
+                      fprintf(stdout, '0\t');
+                      fprintf(stdout, p);
+                      fprintf(stdout, '\t');
+                      fprintf(stdout, 'T\t');
+                      fprintf(stdout, 'running\t');
+                      fprintf(stdout, buffer);
+
+                    
+                }
+                else if(p < 0){ //unsuccessful, did not create child process and send error
+                    log_error(buffer); //send error msg with token
+                    fprintf(stdout, "?\n");
+                    break;
+                }
+                
             }
             else if(strcmp(token, "stop") == 0 || stopBool == 1){
                 stopBool = 1;
@@ -179,12 +205,12 @@ int main(int argc, char *argv[]) {
         fflush(stdout); //fflush the stdout after every time the user prints something
 
         //DO RUN first after help
-        //the way run works is that you have a main loop that continuously loops and prints deep until next user input
+        //the way run works is that you have a main loop that continuously loops and prints deet until next user input
         //if user types run, it needs to split itself into 2 processes
         //one continues the main while loop with prompt deet
         //2nd one becomes the child process
         //takes in a bunch of strings and those are copied into a new command 
-        //if you went itno command prompt without running deet, and run echo abc
+        //if you went into command prompt without running deet, and run echo abc
         //echo is a built in command that prints whatever comes after it
         //echo abc will print abc into terminal
         //sleep is another command that makes the terminal sleep for a couple seconds
@@ -216,6 +242,8 @@ int main(int argc, char *argv[]) {
         //just turn the process into something else and it cant run any commands that you put directly underneath it
         //literally just tell execcvp to turn itself into an echo command
         //it takes in strings and you just tell it 'turn into echo' with all the arguments behind it
+
+        //man pages 
     }
 
 
