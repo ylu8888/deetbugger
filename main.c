@@ -15,6 +15,8 @@ int main(int argc, char *argv[]) {
     fprintf(stdout, "deet> ");
 
     char* buffer = NULL; //store the user input into a buffer
+    char* tempBuff = NULL;
+    char* frogBuff = NULL;
     size_t buffSize = 0;
 
     //int deetCount = 0;
@@ -43,21 +45,21 @@ int main(int argc, char *argv[]) {
         //iterate through the buffer to see what the user input and checkk if its a valid input or not
         //the user input should match the terminal commands
 
-        char *tempBuff = strdup(buffer);  //COPY buffer temporarily into another one, need it for Printing since strTok changes buffer
-        char *frogBuff = strdup(buffer); //ill just use this to count the arguments 
+        tempBuff = strdup(buffer);  //COPY buffer temporarily into another one, need it for Printing since strTok changes buffer
+        frogBuff = strdup(buffer); //ill just use this to count the arguments 
 
-        char* token = strtok(buffer, " "); //split the input based on spaces using strtok
+        
 
         char* frogTok = strtok(frogBuff, " "); //using this just to count the args
         int frogCount = 0;
         while(frogTok != NULL){
+            frogCount++;
             frogTok = strtok(NULL, " ");
-            if(frogTok != NULL){
-                frogCount++;
-
-            }
+            //fprintf(stdout, "%d", frogCount);
         }
         frogCount = frogCount - 2; //subtract the 'run' and the 'echo' aka progName to get the count of the 
+
+        char* token = strtok(buffer, " "); //split the input based on spaces using strtok
 
         //these are booleans to see which command was run by user
         int quitProg = 0, showBool = 0, runBool = 0, stopBool = 0, contBool = 0, releaseBool = 0, waitBool = 0, killBool = 0, peekBool = 0, pokeBool = 0, btBool = 0;
@@ -215,31 +217,32 @@ int main(int argc, char *argv[]) {
                 }
             }
 
-            char* progName;
+            char* progName = NULL;
             if(runBool == 1 && argCount == 2){ //GRAB THE name of the program AFTER 'run' for ex: grabbing echo from run echo a b c 
-                strcopy(token, progName); //copy echo into progName
+                progName = strdup(token);//copy echo into progName
             }
 
+            char *argv[frogCount]; //argv array to store in execvp
             if(argCount > 2){ //only want to grab the arguments after echo aka progName
-                char* argv[frogCount]; //argv array to store in execvp
-                argv[argCount] = token;
+                argv[argCount - 2] = token;
             }
 
             if(runBool == 1 && token == NULL){ //only if run arguments are valid
+               argv[frogCount] = NULL;
                pid_t p = fork(); 
                 //int p = 1;
 
                 if(p == 0){ //child process has been created
-                    dup2(2, 1); //close stdout and redirect to stderr
+                    dup2(fileno(stderr), fileno(stdout)); //close stdout and redirect to stderr
                     ptrace(PTRACE_TRACEME, 0, NULL, NULL);
 
-                    execvp(progName, 
+                    execvp(progName, argv);
                     //send in echo as first one
                     // array with a b c
                     //null as the argv
                     //exec argument is argv
 
-                    if(argCount
+                    
                     
                 }
                 if(p > 0){ //it returned to parent 
@@ -270,9 +273,9 @@ int main(int argc, char *argv[]) {
 
         } //end of the infinite while loop
 
-        free(buffer);
-        free(tempBuff);
-        free(frogBuff);
+        
+        // free(tempBuff);
+        // free(frogBuff);
 
         if(quitProg == 1){
             break; //if the user typed 'quit' just end
@@ -323,6 +326,9 @@ int main(int argc, char *argv[]) {
 
     }
 
+    free(buffer);
+    free(tempBuff);
+    free(frogBuff);
 
     return 0;
 }
