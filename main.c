@@ -42,9 +42,7 @@ int main(int argc, char *argv[]) {
         //iterate through the buffer to see what the user input and checkk if its a valid input or not
         //the user input should match the terminal commands
 
-        
-        // char tempBuff[strlen(buffer)]; //COPY buffer temporarily into another one, need it for Printing since strTok changes buffer
-        // strcpy(buffer, tempBuff);
+        char *tempBuff = strdup(buffer);  //COPY buffer temporarily into another one, need it for Printing since strTok changes buffer
 
         char* token = strtok(buffer, " "); //split the input based on spaces using strtok
 
@@ -225,7 +223,7 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "\t");
                       fprintf(stdout, "T\t");
                       fprintf(stdout, "running\t");
-                      fprintf(stdout, "%s\n", buffer);
+                      fprintf(stdout, "%s\n", tempBuff);
 
                       // size_t bufLen = strlen(buffer);
                       // for(int i = 0; i < bufLen; i++){
