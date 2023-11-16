@@ -269,6 +269,8 @@ int main(int argc, char *argv[]) {
 
                   // log_state_change(p, PSTATE_RUNNING, PSTATE_STOPPED, 999); //already being done in the signal handler func
 
+                    //the PTRACEME will send a SIGCHLD which gets caught by the signal handler function 
+                    //which logs the signal 17 and then the parent function will print this status line below
                       fprintf(stdout, "0\t");
                       fprintf(stdout, "%d", p);
                       fprintf(stdout, "\t");
