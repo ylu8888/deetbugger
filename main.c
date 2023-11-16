@@ -203,15 +203,26 @@ int main(int argc, char *argv[]) {
                 }
             }
 
+            char* progName;
+            if(runBool == 1 && argCount == 2){ //GRAB THE name of the program AFTER 'run' for ex: grabbing echo from run echo a b c 
+                strcopy(token, progName); //copy echo into progName
+            }
+
             if(runBool == 1 && token == NULL){ //only if run arguments are valid
                pid_t p = fork(); 
                 //int p = 1;
 
                 if(p == 0){ //child process has been created
                     dup2(2, 1); //close stdout and redirect to stderr
-                    ptrace(PTRACE_TRACEME, p, 0, 0);
+                    ptrace(PTRACE_TRACEME, 0, NULL, NULL);
 
-                 
+                    execvp(progName, 
+                    //send in echo as first one
+                    // array with a b c
+                    //null as the argv
+                    //exec argument is argv
+
+                    if(argCount
                     
                 }
                 if(p > 0){ //it returned to parent 
@@ -219,18 +230,11 @@ int main(int argc, char *argv[]) {
                       log_state_change(p, PSTATE_NONE, PSTATE_RUNNING, 999); //only log state changes in the parent, 999 is my own status number
 
                       fprintf(stdout, "0\t");
-                      fprintf(stdout, "%d", (int)p);
+                      fprintf(stdout, "%d", p);
                       fprintf(stdout, "\t");
                       fprintf(stdout, "T\t");
                       fprintf(stdout, "running\t");
                       fprintf(stdout, "%s\n", tempBuff);
-
-                      // size_t bufLen = strlen(buffer);
-                      // for(int i = 0; i < bufLen; i++){
-                      //   fprintf(stdout, "%c", buffer[i]);
-
-                      // }
-                      // fprintf(stdout, "\n");
 
                       log_prompt(); // issues another prompt
                      fprintf(stdout, "deet> ");
