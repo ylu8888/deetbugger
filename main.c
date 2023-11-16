@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/ptrace.h>
+#include <sys/wait.h>
 
 void sig_handler(int signum){
     //when u do sigaction, it calls these handlers
@@ -38,6 +39,7 @@ int main(int argc, char *argv[]) {
 
     char* buffer = NULL; //store the user input into a buffer
     char* tempBuff = NULL;
+    char* toadBuff = NULL;
     char* frogBuff = NULL;
     size_t buffSize = 0;
 
@@ -68,6 +70,13 @@ int main(int argc, char *argv[]) {
         }
 
         tempBuff = strdup(buffer);  //COPY buffer temporarily into another one, need it for Printing since strTok changes buffer
+        toadBuff = strdup(buffer);
+
+        char* spaceIdx = strchr(tempBuff, ' ');
+        if(spaceIdx != NULL){
+            strcpy(toadBuff, spaceIdx + 1);
+        }
+
         frogBuff = strdup(buffer); //ill just use this to count the arguments 
 
         char* frogTok = strtok(frogBuff, " "); //using this just to count the args
@@ -272,7 +281,8 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "\t");
                       fprintf(stdout, "T\t");
                       fprintf(stdout, "running\t");
-                      fprintf(stdout, "%s\n", tempBuff);
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "%s\n", toadBuff);
 
                       log_prompt(); // issues another prompt
 
@@ -285,7 +295,8 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "\t");
                       fprintf(stdout, "T\t");
                       fprintf(stdout, "stopped\t");
-                      fprintf(stdout, "%s\n", tempBuff);
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "%s\n", toadBuff);
 
                      log_prompt();
                      fprintf(stdout, "deet> ");
@@ -361,6 +372,7 @@ int main(int argc, char *argv[]) {
     free(buffer);
     free(tempBuff);
     free(frogBuff);
+    free(toadBuff);
 
     return 0;
 }
