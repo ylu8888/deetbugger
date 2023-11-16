@@ -308,11 +308,14 @@ int main(int argc, char *argv[]) {
                      // waitpid
 
                 }
-                // else if(p < 0){ //unsuccessful, did not create child process and send error
-                //     log_error(buffer); //send error msg with token
-                //     fprintf(stdout, "?\n");
-                //     break;
-                // }
+                else if(p < 0){ //unsuccessful, did not create child process and send error
+                    log_error(buffer); //send error msg with token
+                    fprintf(stdout, "?\n");
+                    log_prompt(); // issues another prompt
+                    fprintf(stdout, "deet> ");
+                    fflush(stdout); 
+                    break;
+                }
            }
            
 
