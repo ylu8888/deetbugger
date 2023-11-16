@@ -222,13 +222,18 @@ int main(int argc, char *argv[]) {
                 progName = strdup(token);//copy echo into progName
             }
 
-            char *argv[frogCount]; //argv array to store in execvp
+            char *argv[frogCount + 1]; //argv array to store in execvp
             if(argCount > 2){ //only want to grab the arguments after echo aka progName
                 argv[argCount - 2] = token;
+                //fprintf(stdout, "%s\n", argv[argCount - 2]); //ITS WORKING
             }
+            argv[frogCount] = NULL; //set the last element of argv to NULL as per execvp
+            //argv[0] = a
+            //argv[1] = b
+            //argv[2] = c
+            //argv[3] = null
 
             if(runBool == 1 && token == NULL){ //only if run arguments are valid
-               argv[frogCount] = NULL;
                pid_t p = fork(); 
                 //int p = 1;
 
@@ -236,7 +241,15 @@ int main(int argc, char *argv[]) {
                     dup2(fileno(stderr), fileno(stdout)); //close stdout and redirect to stderr
                     ptrace(PTRACE_TRACEME, 0, NULL, NULL);
 
-                    execvp(progName, argv);
+                    int execRes = execvp(progName, argv);
+                    if(execRes == -1){ //if execvp returns -1 as error, just log to terminal
+                        log_error(buffer); //send error msg with token
+                        fprintf(stdout, "?\n");
+                        log_prompt(); // issues another prompt
+                        fprintf(stdout, "deet> ");
+                        fflush(stdout); 
+
+                    }
                     //send in echo as first one
                     // array with a b c
                     //null as the argv
