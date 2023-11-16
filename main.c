@@ -6,12 +6,22 @@
 #include <unistd.h>
 #include <sys/ptrace.h>
 
-//when u do sigaction, it calls these handlers
 void sig_handler(int signum){
+    //when u do sigaction, it calls these handlers
     int status;
     pid_t p;
+   
+    while((p = waitpid(-1, &status, WUNTRACED)) != 0){ //loop that continues waiting for child processes until there are none left
 
-    
+        //waits for child process to change state and when child process is detected, check to see if it has STOPPED
+        //if stopped, then log the signal and then change state from running to stopped
+        if(WIFSTOPPED(status)){
+            log_signal(signum); //This function must be called as the first action in the signal handler
+            log_state_change(p, PSTATE_RUNNING, PSTATE_STOPPED, 999);
+            break;
+        }
+    }
+ 
 }
 
 int main(int argc, char *argv[]) {
@@ -26,7 +36,15 @@ int main(int argc, char *argv[]) {
     char* frogBuff = NULL;
     size_t buffSize = 0;
 
-    //int deetCount = 0;
+    struct sigaction sigact;
+
+    sigact.sa_handler = sig_handler; //assign signal handler function to the sa_handler field of the sigact struct
+    
+    sigact.sa_flags = SA_RESTART; //system call is restarted when signal handler returns
+
+    //set up a signal handler for the SIGCHLD signal using sigaction
+    sigaction(SIGCHLD, &sigact, NULL); //check the return and if condition it
+    
 
     for(;;){ //infinite while loop
        // fprintf(stdout, "deet> ");
@@ -226,7 +244,7 @@ int main(int argc, char *argv[]) {
 
             char* progName = NULL;
             if(runBool == 1 && argCount == 2){ //GRAB THE name of the program AFTER 'run' for ex: grabbing echo from run echo a b c 
-                progName = strdup(token);//copy echo into progName
+                progName = strdup(token);//copy echo into progName as the first one
             }
 
             char *argv[frogCount + 1]; //argv array to store in execvp
@@ -246,9 +264,9 @@ int main(int argc, char *argv[]) {
 
                 if(p == 0){ //child process has been created
                     dup2(2, 1); //close stdout and redirect to stderr
-                    ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+                    ptrace(PTRACE_TRACEME, 0, NULL, NULL);  //ptrace will call sigstop and the parent will get a SIGCHLD
 
-                    int execRes = execvp(progName, argv);
+                    int execRes = execvp(progName, argv); //argv is array with [a, b, c, NULL]
                     if(execRes == -1){ //if execvp returns -1 as error, just log to terminal
                         log_error(buffer); //send error msg with token
                         fprintf(stdout, "?\n");
@@ -258,18 +276,7 @@ int main(int argc, char *argv[]) {
 
                     }
 
-                    //ptrace will call sigstop
-                    //and parent will get a sigchild
-                    //signal(sgchild, child_handler)
-                    //sigaction action
-                    //action.sa_handler
-                    
-                    //send in echo as first one
-                    // array with a b c
-                    //null as the argv
-                    //exec argument is argv
-
-                    
+                    //signal(SIGCHLD, child_handler)
                     
                 }
                 if(p > 0){ //it returned to parent 
@@ -285,9 +292,9 @@ int main(int argc, char *argv[]) {
 
                       log_prompt(); // issues another prompt
 
-                     log_state_change(p, PSTATE_RUNNING, PSTATE_STOPPED, 999);
+                  // log_state_change(p, PSTATE_RUNNING, PSTATE_STOPPED, 999); //already being done in the signal handler func
 
-                     fprintf(stdout, "0\t");
+                      fprintf(stdout, "0\t");
                       fprintf(stdout, "%d", p);
                       fprintf(stdout, "\t");
                       fprintf(stdout, "T\t");
