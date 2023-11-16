@@ -6,6 +6,13 @@
 #include <unistd.h>
 #include <sys/ptrace.h>
 
+//when u do sigaction, it calls these handlers
+void sig_handler(int signum){
+    int status;
+    pid_t p;
+
+    
+}
 
 int main(int argc, char *argv[]) {
 
@@ -238,7 +245,7 @@ int main(int argc, char *argv[]) {
                 //int p = 1;
 
                 if(p == 0){ //child process has been created
-                    dup2(fileno(stderr), fileno(stdout)); //close stdout and redirect to stderr
+                    dup2(2, 1); //close stdout and redirect to stderr
                     ptrace(PTRACE_TRACEME, 0, NULL, NULL);
 
                     int execRes = execvp(progName, argv);
@@ -250,6 +257,13 @@ int main(int argc, char *argv[]) {
                         fflush(stdout); 
 
                     }
+
+                    //ptrace will call sigstop
+                    //and parent will get a sigchild
+                    //signal(sgchild, child_handler)
+                    //sigaction action
+                    //action.sa_handler
+                    
                     //send in echo as first one
                     // array with a b c
                     //null as the argv
@@ -270,6 +284,17 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "%s\n", tempBuff);
 
                       log_prompt(); // issues another prompt
+
+                     log_state_change(p, PSTATE_RUNNING, PSTATE_STOPPED, 999);
+
+                     fprintf(stdout, "0\t");
+                      fprintf(stdout, "%d", p);
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "T\t");
+                      fprintf(stdout, "stopped\t");
+                      fprintf(stdout, "%s\n", tempBuff);
+
+                     log_prompt();
                      fprintf(stdout, "deet> ");
                      fflush(stdout); 
 
