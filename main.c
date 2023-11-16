@@ -12,7 +12,6 @@ void sig_handler(int signum){
     pid_t p;
    
     while((p = waitpid(-1, &status, WUNTRACED)) != 0){ //loop that continues waiting for child processes until there are none left
-
         //waits for child process to change state and when child process is detected, check to see if it has STOPPED
         //if stopped, then log the signal and then change state from running to stopped
         if(WIFSTOPPED(status)){
@@ -21,13 +20,10 @@ void sig_handler(int signum){
             break;
         }
     }
- 
 }
 
 int main(int argc, char *argv[]) {
-
     log_startup(); //starts up deets
-
     log_prompt(); // issues a prompt
     fprintf(stdout, "deet> ");
 
@@ -37,14 +33,10 @@ int main(int argc, char *argv[]) {
     size_t buffSize = 0;
 
     struct sigaction sigact;
-
     sigact.sa_handler = sig_handler; //assign signal handler function to the sa_handler field of the sigact struct
-    
     sigact.sa_flags = SA_RESTART; //system call is restarted when signal handler returns
-
     //set up a signal handler for the SIGCHLD signal using sigaction
     sigaction(SIGCHLD, &sigact, NULL); //check the return and if condition it
-    
 
     for(;;){ //infinite while loop
        // fprintf(stdout, "deet> ");
@@ -66,14 +58,8 @@ int main(int argc, char *argv[]) {
             buffer[length - 1] = '\0';
         }
 
-        
-        //iterate through the buffer to see what the user input and checkk if its a valid input or not
-        //the user input should match the terminal commands
-
         tempBuff = strdup(buffer);  //COPY buffer temporarily into another one, need it for Printing since strTok changes buffer
         frogBuff = strdup(buffer); //ill just use this to count the arguments 
-
-        
 
         char* frogTok = strtok(frogBuff, " "); //using this just to count the args
         int frogCount = 0;
@@ -88,12 +74,11 @@ int main(int argc, char *argv[]) {
 
         //these are booleans to see which command was run by user
         int quitProg = 0, showBool = 0, runBool = 0, stopBool = 0, contBool = 0, releaseBool = 0, waitBool = 0, killBool = 0, peekBool = 0, pokeBool = 0, btBool = 0;
-
         int argCount = 1; //needs to start at 1 cause we already got a token out
 
-
+        //iterate through the buffer to see what the user input and checkk if its a valid input or not
+        //the user input should match the terminal commands
         while(token != NULL){
-
             //compare the strings, if returns 0 its equal
             if(strcmp(token, "help") == 0){
                 fprintf(stdout, "Available commands:\n"
@@ -118,7 +103,6 @@ int main(int argc, char *argv[]) {
             else if(strcmp(token, "quit") == 0){
                 //terminates deet only AFTER killing any processes being debugged
                 //has to wait before they actually terminate before exiting itself
-
                 token = strtok(NULL, " "); //get the next token
 
                 if (token != NULL){
@@ -135,7 +119,6 @@ int main(int argc, char *argv[]) {
                     quitProg = 1;
                     break;
                 }
-
 
             }
             else if(strcmp(token, "show") == 0 || showBool == 1){
@@ -253,14 +236,9 @@ int main(int argc, char *argv[]) {
                 //fprintf(stdout, "%s\n", argv[argCount - 2]); //ITS WORKING
             }
             argv[frogCount] = NULL; //set the last element of argv to NULL as per execvp
-            //argv[0] = a
-            //argv[1] = b
-            //argv[2] = c
-            //argv[3] = null
 
             if(runBool == 1 && token == NULL){ //only if run arguments are valid
                pid_t p = fork(); 
-                //int p = 1;
 
                 if(p == 0){ //child process has been created
                     dup2(2, 1); //close stdout and redirect to stderr
@@ -275,9 +253,6 @@ int main(int argc, char *argv[]) {
                         fflush(stdout); 
 
                     }
-
-                    //signal(SIGCHLD, child_handler)
-                    
                 }
                 if(p > 0){ //it returned to parent 
                     
@@ -305,10 +280,8 @@ int main(int argc, char *argv[]) {
                      fprintf(stdout, "deet> ");
                      fflush(stdout); 
 
-                     // waitpid
-
                 }
-                else if(p < 0){ //unsuccessful, did not create child process and send error
+                if(p < 0){ //unsuccessful, did not create child process and send error
                     log_error(buffer); //send error msg with token
                     fprintf(stdout, "?\n");
                     log_prompt(); // issues another prompt
