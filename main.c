@@ -4,6 +4,7 @@
 #include "deet.h"
 #include <sys/types.h>
 #include <unistd.h>
+#include <sys/ptrace.h>
 
 
 int main(int argc, char *argv[]) {
@@ -41,8 +42,11 @@ int main(int argc, char *argv[]) {
         //iterate through the buffer to see what the user input and checkk if its a valid input or not
         //the user input should match the terminal commands
 
-        //split the input based on spaces using strtok
-        char* token = strtok(buffer, " ");
+        
+        // char tempBuff[strlen(buffer)]; //COPY buffer temporarily into another one, need it for Printing since strTok changes buffer
+        // strcpy(buffer, tempBuff);
+
+        char* token = strtok(buffer, " "); //split the input based on spaces using strtok
 
         //these are booleans to see which command was run by user
         int quitProg = 0, showBool = 0, runBool = 0, stopBool = 0, contBool = 0, releaseBool = 0, waitBool = 0, killBool = 0, peekBool = 0, pokeBool = 0, btBool = 0;
@@ -207,8 +211,9 @@ int main(int argc, char *argv[]) {
 
                 if(p == 0){ //child process has been created
                     dup2(2, 1); //close stdout and redirect to stderr
+                    ptrace(PTRACE_TRACEME, p, 0, 0);
 
-                    //exit
+                 
                     
                 }
                 if(p > 0){ //it returned to parent 
@@ -221,6 +226,13 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "T\t");
                       fprintf(stdout, "running\t");
                       fprintf(stdout, "%s\n", buffer);
+
+                      // size_t bufLen = strlen(buffer);
+                      // for(int i = 0; i < bufLen; i++){
+                      //   fprintf(stdout, "%c", buffer[i]);
+
+                      // }
+                      // fprintf(stdout, "\n");
 
                       log_prompt(); // issues another prompt
                      fprintf(stdout, "deet> ");
@@ -238,6 +250,8 @@ int main(int argc, char *argv[]) {
            
 
         } //end of the infinite while loop
+
+        free(buffer);
 
         if(quitProg == 1){
             break; //if the user typed 'quit' just end
