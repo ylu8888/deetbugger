@@ -39,12 +39,25 @@ int main(int argc, char *argv[]) {
             buffer[length - 1] = '\0';
         }
 
+        
         //iterate through the buffer to see what the user input and checkk if its a valid input or not
         //the user input should match the terminal commands
 
         char *tempBuff = strdup(buffer);  //COPY buffer temporarily into another one, need it for Printing since strTok changes buffer
+        char *frogBuff = strdup(buffer); //ill just use this to count the arguments 
 
         char* token = strtok(buffer, " "); //split the input based on spaces using strtok
+
+        char* frogTok = strtok(frogBuff, " "); //using this just to count the args
+        int frogCount = 0;
+        while(frogTok != NULL){
+            frogTok = strtok(NULL, " ");
+            if(frogTok != NULL){
+                frogCount++;
+
+            }
+        }
+        frogCount = frogCount - 2; //subtract the 'run' and the 'echo' aka progName to get the count of the 
 
         //these are booleans to see which command was run by user
         int quitProg = 0, showBool = 0, runBool = 0, stopBool = 0, contBool = 0, releaseBool = 0, waitBool = 0, killBool = 0, peekBool = 0, pokeBool = 0, btBool = 0;
@@ -111,7 +124,6 @@ int main(int argc, char *argv[]) {
             }
             else if(strcmp(token, "run") == 0 || runBool == 1){
                 runBool = 1;
-                
             }
             else if(strcmp(token, "stop") == 0 || stopBool == 1){
                 stopBool = 1;
@@ -208,6 +220,11 @@ int main(int argc, char *argv[]) {
                 strcopy(token, progName); //copy echo into progName
             }
 
+            if(argCount > 2){ //only want to grab the arguments after echo aka progName
+                char* argv[frogCount]; //argv array to store in execvp
+                argv[argCount] = token;
+            }
+
             if(runBool == 1 && token == NULL){ //only if run arguments are valid
                pid_t p = fork(); 
                 //int p = 1;
@@ -254,6 +271,8 @@ int main(int argc, char *argv[]) {
         } //end of the infinite while loop
 
         free(buffer);
+        free(tempBuff);
+        free(frogBuff);
 
         if(quitProg == 1){
             break; //if the user typed 'quit' just end
