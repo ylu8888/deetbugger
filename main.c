@@ -29,7 +29,7 @@ void sig_handler(int signum){
             break;
         }
         else if(WIFEXITED(status)){
-            log_signal(signum);
+            //log_signal(signum);
             break;
             
         }
@@ -37,7 +37,8 @@ void sig_handler(int signum){
             
         }
         else if(WIFSIGNALED(status)){
-            
+            log_signal(signum);
+            break;
         }
     }
 }
@@ -452,7 +453,7 @@ int main(int argc, char *argv[]) {
                     log_state_change(procArray[i]->pid, PSTATE_STOPPED, PSTATE_KILLED, 999); //log state from stopped to killed
 
                     //send a kill signal to kill the process
-                    if(kill(SIGCHLD, procArray[i]->pid, SIGTERM) != 0){ 
+                    if(kill(procArray[i]->pid, SIGKILL) != 0){ 
                         log_error(buffer); //send error msg with token
                         fprintf(stdout, "?\n");
                         log_prompt(); // issues another prompt
@@ -462,21 +463,16 @@ int main(int argc, char *argv[]) {
                     }
                     
                 }
+                //sigchild, pid, sigkill
 
                 for(int i = 0; i < 100; i++){
                    if(procArray[i]->pid == 0) break; //when we run into a NULL index in our struct array 
+                    int status;
+                    waitpid(procArray[i]->pid, &status, 0); //wait for the child processes to terminate 
                     procArray[i]->state = "dead";
                     log_state_change(procArray[i]->pid, PSTATE_KILLED, PSTATE_DEAD, 999); //log state from killed to dead
                     
-                    if(kill(procArray[i]->pid, SIGTERM) == 0){
-                        log_error(buffer); //send error msg with token
-                        fprintf(stdout, "?\n");
-                        log_prompt(); // issues another prompt
-                        fprintf(stdout, "deet> ");
-                        fflush(stdout); 
-                        break;
-                    }
-                    
+                
                 }
                 //once user hits control c, you get the sigint
                 //loop thru the array and send a kill signal to kill all the processes
