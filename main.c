@@ -450,6 +450,8 @@ int main(int argc, char *argv[]) {
             if(quitProg == 1){ //START OF QUIT COMMAND
                 for(int i = 0; i < 100; i++){
                    if(procArray[i]->pid == 0) break; //when we run into a NULL index in our struct array 
+
+                    fprintf(stdout, "%d", i);
                     procArray[i]->state = "killed";
                     log_state_change(procArray[i]->pid, PSTATE_STOPPED, PSTATE_KILLED, 999); //log state from stopped to killed
 
@@ -462,6 +464,10 @@ int main(int argc, char *argv[]) {
                         fflush(stdout); 
                         break;
                     }
+                    int status;
+                    waitpid(procArray[i]->pid, &status, 0); //wait for the child processes to terminate 
+                    procArray[i]->state = "dead";
+                    log_state_change(procArray[i]->pid, PSTATE_KILLED, PSTATE_DEAD, 999);
                     
                 }
 
@@ -478,16 +484,16 @@ int main(int argc, char *argv[]) {
                 }
                 //sigchild, pid, sigkill
 
-                for(int i = 0; i < 100; i++){
-                   if(procArray[i]->pid == 0) break; //when we run into a NULL index in our struct array 
-                    //fprintf(stdout, "DO I EVER MAKE IT THIS FOR LOOP");
-                    int status;
-                    waitpid(procArray[i]->pid, &status, 0); //wait for the child processes to terminate 
-                    procArray[i]->state = "dead";
-                    log_state_change(procArray[i]->pid, PSTATE_KILLED, PSTATE_DEAD, 999); //log state from killed to dead
+                // for(int i = 0; i < 100; i++){
+                //    if(procArray[i]->pid == 0) break; //when we run into a NULL index in our struct array 
+                //     //fprintf(stdout, "DO I EVER MAKE IT THIS FOR LOOP");
+                //     int status;
+                //     waitpid(procArray[i]->pid, &status, 0); //wait for the child processes to terminate 
+                //     procArray[i]->state = "dead";
+                //     log_state_change(procArray[i]->pid, PSTATE_KILLED, PSTATE_DEAD, 999); //log state from killed to dead
                     
                 
-                }
+                // }
 
                 for(int i = 0; i < 100; i++){
                     if(procArray[i]->pid == 0) break;
