@@ -64,9 +64,10 @@ int main(int argc, char *argv[]) {
          
         }; //check the return and if condition it 
 
-    PROCESS* procArray[100]; //make an array of struct PROCESSES to store the users processes
-    int arrSize = 100;
-    procArray = (PROCESS*) malloc(arrSize * sizeof(PROCESS)); //allocate memory for 100 structs
+    PROCESS* procArray[100];//make an array of struct PROCESSES to store the users processes
+    for (int i = 0; i < 100; ++i) {
+        procArray[i] = (PROCESS*)malloc(sizeof(PROCESS)); //allocate memory for 100 structs
+    }
     int numProc = 0; //count the number of processes the user makes
 
     for(;;){ //infinite while loop
@@ -328,17 +329,40 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "\t");
                       fprintf(stdout, "%s\n", toadBuff);
 
+                      // && procArray[i]->trace != '\0'
+
+
                     for(int i = 0; i < 100; i++){ //loop through the struct array
-                        if(procArray[i] != NULL || strcmp(procArray[i].state, "dead") == 0){ //the first array index where its not NULL like its not even initialized yet
+                       // fprintf(stdout, "%d\n", procArray[i]->pid); //defaulted on zero 0
+                       //fprintf(stdout, "%c\t", procArray[i]->trace); //defaulted on empty space ' '
+                       //fprintf(stdout, "%s\t", procArray[i]->state); //defaulted on NULL
+                      // fprintf(stdout, "\t");
+                      // fprintf(stdout, "%s\n", procArray[i]->args); //defaulted on NULL
+                      // fprintf(stdout, "%d\n", i);
+
+                        if((procArray[i] != NULL) || strcmp(procArray[i]->state, "dead") == 0){ //the first array index where its not NULL like its not even initialized yet
                             //OR if the state of the proc array is dead, then we replace it
-                            procArray[i].pid = p;
-                            procArray[i].trace = 'T';
-                            procArray[i].state = "stopped";
-                            procArray[i].args = toadBuff;
+                            if(procArray[i]->pid == 0){ //ONLY IF THE PROCARRAY IS NOT DEFAULTED ON NULL
+                                procArray[i]->pid = p;
+                            procArray[i]->trace = 'T';
+                            procArray[i]->state = "stopped";
+                            procArray[i]->args = toadBuff;
                            // procArray[i].exit //we can just leave this alone since we dont need to touch .exit unless its kill or dead
+
+                                //DEBUGGING TESTS ITS WORKING LOLLOOL
+                             // fprintf(stdout, "0\t");
+                             //  fprintf(stdout, "%d\t", procArray[i]->pid);
+                             //  fprintf(stdout, "%c\t", procArray[i]->trace);
+                             //  fprintf(stdout, "%s\t", procArray[i]->state);
+                             //  fprintf(stdout, "\t");
+                             //  fprintf(stdout, "%s\n", procArray[i]->args);
+                             //  fprintf(stdout, "%d\n", i);
                             break;
+                            }
                         }
                     }
+
+
 
                      log_prompt();
                      fprintf(stdout, "deet> ");
@@ -364,17 +388,20 @@ int main(int argc, char *argv[]) {
             if(showBool == 1){ //show command
                 if(argCount == 2 && token == NULL){ //if there no specified process
                     for(int i = 0; i < 100; i++){ //loop through the struct array
-                        if(procArray[i] == NULL) break;
+                        if(procArray[i]->pid == 0) break;
 
                       fprintf(stdout, "0\t");
-                      fprintf(stdout, "%d", procArray[i].pid);
-                      fprintf(stdout, procArray[i].trace);
-                      fprintf(stdout, "T\t");
-                      fprintf(stdout, procArray[i].state);
+                      fprintf(stdout, "%d\t", procArray[i]->pid);
+                      fprintf(stdout, "%c\t", procArray[i]->trace);
+                      fprintf(stdout, "%s", procArray[i]->state);
                       fprintf(stdout, "\t");
                       fprintf(stdout, "\t");
-                      fprintf(stdout, "%s\n", procArray[i].args);
+                      fprintf(stdout, "%s\n", procArray[i]->args);
+                     
                     }
+                    log_prompt();
+                     fprintf(stdout, "deet> ");
+                     fflush(stdout); 
                     
                 }
                 else if(argCount == 3 && token == NULL){ // if theres a specified process
@@ -437,7 +464,13 @@ int main(int argc, char *argv[]) {
     free(tempBuff);
     free(frogBuff);
     free(toadBuff);
-    free(procArray);
+
+     for (int i = 0; i < 100; ++i) {
+            free(procArray[i]); //free the proc array inviidually each element
+            free(procArray[i]->state);
+            free(procArray[i]->args);
+
+    }
 
     return 0;
 }
