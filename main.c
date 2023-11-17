@@ -7,15 +7,23 @@
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 
+typedef struct process {
+    pid_t pid;
+    char trace;
+    char* state;
+    char* args;
+    int exit;
+} PROCESS;
+
 void sig_handler(int signum){
     //when u do sigaction, it calls these handlers
     int status;
     pid_t p;
    
-    while((p = waitpid(0, &status, WUNTRACED)) > 0){ //loop that continues waiting for child processes until there are none left
+    while((p = waitpid(0, &status, WUNTRACED | WCONTINUED | WNOHAND)) > 0){ //loop that continues waiting for child processes until there are none left
         //waits for child process to change state and when child process is detected, check to see if it has STOPPED
-        //if stopped, then log the signal and then change state from running to stopped
-        if(WIFSTOPPED(status)){
+        
+        if(WIFSTOPPED(status)){//if stopped, then log the signal and then change state from running to stopped
             log_signal(signum); //This function must be called as the first action in the signal handler
             log_state_change(p, PSTATE_RUNNING, PSTATE_STOPPED, 999);
             break;
@@ -47,7 +55,12 @@ int main(int argc, char *argv[]) {
     sigact.sa_handler = sig_handler; //assign signal handler function to the sa_handler field of the sigact struct
     sigact.sa_flags = SA_RESTART; //system call is restarted when signal handler returns
     //set up a signal handler for the SIGCHLD signal using sigaction
-    sigaction(SIGCHLD, &sigact, NULL); //check the return and if condition it
+    
+    //sigaction(SIGCHLD, &sigact, NULL)
+        
+
+    PROCESS procArray[100]; //make an array of struct PROCESSES to store the users processes
+    int numProc = 0; //count the number of processes the user makes
 
     for(;;){ //infinite while loop
        // fprintf(stdout, "deet> ");
@@ -166,6 +179,10 @@ int main(int argc, char *argv[]) {
                 waitBool = 1;
             }
             else if(strcmp(token, "kill") == 0 || killBool == 1){
+                //when implementing the kill functionality, loop through the array of structs 
+                //and set that process equal to NULL since we are killing it
+                //then whenever a new child process is created we loop through array again
+                //and the first NULL we encounter we store the process in that array element
                 killBool = 1;
             }
             else if(strcmp(token, "peek") == 0 || peekBool == 1){
@@ -190,7 +207,6 @@ int main(int argc, char *argv[]) {
             }
 
             token = strtok(NULL, " "); //get the next token
-
             argCount++; //count the num of arguments
 
             if(runBool == 1 && argCount == 2 && token == NULL){ //if run has no arguments, it is an error
@@ -259,6 +275,7 @@ int main(int argc, char *argv[]) {
                pid_t p = fork(); 
 
                 if(p == 0){ //child process has been created
+                    numProc++; //keep track of the number of child processes being created
                     dup2(2, 1); //close stdout and redirect to stderr
                     ptrace(PTRACE_TRACEME, 0, NULL, NULL);  //ptrace will call sigstop and the parent will get a SIGCHLD
 
@@ -273,9 +290,9 @@ int main(int argc, char *argv[]) {
                     }
                 }
                 if(p > 0){ //it returned to parent 
-                    
                       log_state_change(p, PSTATE_NONE, PSTATE_RUNNING, 999); //only log state changes in the parent, 999 is my own status number
 
+                    //PRINT out the status line for when the process STOPS
                       fprintf(stdout, "0\t");
                       fprintf(stdout, "%d", p);
                       fprintf(stdout, "\t");
@@ -285,6 +302,15 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "%s\n", toadBuff);
 
                       log_prompt(); // issues another prompt
+
+                        if(sigaction(SIGCHLD, &sigact, NULL) == -1){
+                            log_error(buffer); //send error msg with token
+                            fprintf(stdout, "?\n");
+                            log_prompt(); // issues another prompt
+                            fprintf(stdout, "deet> ");
+                            fflush(stdout); 
+                            break;
+                        }; //check the return and if condition it
 
                   // log_state_change(p, PSTATE_RUNNING, PSTATE_STOPPED, 999); //already being done in the signal handler func
 
@@ -297,6 +323,11 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "stopped\t");
                       fprintf(stdout, "\t");
                       fprintf(stdout, "%s\n", toadBuff);
+
+                    for(int i = 0; i < procArray; i++){ //loop through the struct array
+                        if(procArray[i] != NULL){ //the first array index where its not NULL
+                        }
+                    }
 
                      log_prompt();
                      fprintf(stdout, "deet> ");
@@ -315,10 +346,6 @@ int main(int argc, char *argv[]) {
            
 
         } //end of the infinite while loop
-
-        
-        // free(tempBuff);
-        // free(frogBuff);
 
         if(quitProg == 1){
             break; //if the user typed 'quit' just end
