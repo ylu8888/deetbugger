@@ -70,6 +70,9 @@ int main(int argc, char *argv[]) {
     }
     int numProc = 0; //count the number of processes the user makes
 
+    pid_t p = 0; //makke pid global so can access everywhere
+
+
     for(;;){ //infinite while loop
        // fprintf(stdout, "deet> ");
 
@@ -289,7 +292,7 @@ int main(int argc, char *argv[]) {
             arguv[frogCount] = NULL; //set the last element of argv to NULL as per execvp
 
             if(runBool == 1 && token == NULL){ //only if run arguments are valid
-               pid_t p = fork(); 
+               p = fork(); 
 
                 if(p == 0){ //child process has been created
                     numProc++; //keep track of the number of child processes being created
@@ -353,7 +356,6 @@ int main(int argc, char *argv[]) {
                         }
                     }
                      
-                      fprintf(stdout, "%d", p);
                       fprintf(stdout, "\t");
                       fprintf(stdout, "T\t");
                       fprintf(stdout, "running\t");
@@ -412,13 +414,11 @@ int main(int argc, char *argv[]) {
                     for(int i = 0; i < 100; i++){ //loop through the struct array
                      if(procArray[i]->pid == 0) break; //when we run into a NULL index in our struct array
 
-                      for(int i = 0; i < 100; i++){
-                        if(procArray[i]->pid == 0) break; //IF WE RUN INTO A NULL INDEX IN ARRAY
-                        if(procArray[i]->pid == p){
+                     
                              fprintf(stdout, "%d\t", i);
-                            break;
-                        }
-                      }
+                           
+                      
+                      
                       fprintf(stdout, "%d\t", procArray[i]->pid);
                       fprintf(stdout, "%c\t", procArray[i]->trace);
                       fprintf(stdout, "%s", procArray[i]->state);
@@ -437,13 +437,8 @@ int main(int argc, char *argv[]) {
                    // fprintf(stdout, "%d", argNum);
                    // JUST PRINT OUT THE PROCESS FROM PROCARRAY AT THAT ARGUMENT INDEX
                     if(procArray[argNum]->pid != 0){ //only print this if the show 'argNum ' is VALID
-                      for(int i = 0; i < 100; i++){
-                        if(procArray[i]->pid == 0) break; //IF WE RUN INTO A NULL INDEX IN ARRAY
-                        if(procArray[i]->pid == p){
-                             fprintf(stdout, "%d\t", i);
-                            break;
-                        }
-                      }
+                      
+                      fprintf(stdout, "%d\t", argNum);
                       fprintf(stdout, "%d\t", procArray[argNum]->pid);
                       fprintf(stdout, "%c\t", procArray[argNum]->trace);
                       fprintf(stdout, "%s\t", procArray[argNum]->state);
