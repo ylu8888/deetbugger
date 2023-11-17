@@ -64,7 +64,9 @@ int main(int argc, char *argv[]) {
          
         }; //check the return and if condition it 
 
-    //PROCESS procArray[100]; //make an array of struct PROCESSES to store the users processes
+    PROCESS* procArray[100]; //make an array of struct PROCESSES to store the users processes
+    int arrSize = 100;
+    procArray = (PROCESS*) malloc(arrSize * sizeof(PROCESS)); //allocate memory for 100 structs
     int numProc = 0; //count the number of processes the user makes
 
     for(;;){ //infinite while loop
@@ -156,6 +158,10 @@ int main(int argc, char *argv[]) {
                     break;
                 }
 
+                //once user hits control c, you get the sigint
+                //loop thru the array and send a kill signal to kill all the processes
+                //then quit and shutdown
+
             }
             else if(strcmp(token, "show") == 0 || showBool == 1){
                 showBool = 1;
@@ -188,6 +194,8 @@ int main(int argc, char *argv[]) {
                 //and set that process equal to NULL since we are killing it
                 //then whenever a new child process is created we loop through array again
                 //and the first NULL we encounter we store the process in that array element
+                //actually only do htis when the user calls the RUN command again ^^^ 
+
                 killBool = 1;
             }
             else if(strcmp(token, "peek") == 0 || peekBool == 1){
@@ -321,9 +329,15 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "%s\n", toadBuff);
 
                     for(int i = 0; i < 100; i++){ //loop through the struct array
-                        // if(procArray[i] != NULL){ //the first array index where its not NULL
-                        //     break;
-                        // }
+                        if(procArray[i] != NULL || strcmp(procArray[i].state, "dead") == 0){ //the first array index where its not NULL like its not even initialized yet
+                            //OR if the state of the proc array is dead, then we replace it
+                            procArray[i].pid = p;
+                            procArray[i].trace = 'T';
+                            procArray[i].state = "stopped";
+                            procArray[i].args = toadBuff;
+                           // procArray[i].exit //we can just leave this alone since we dont need to touch .exit unless its kill or dead
+                            break;
+                        }
                     }
 
                      log_prompt();
@@ -339,8 +353,34 @@ int main(int argc, char *argv[]) {
                     fflush(stdout); 
                     break;
                 }
-           }
-           
+           }// end of the RUN command
+
+            //go throu array if u see a dead process
+            //if u want to put a new process in the spot of the dead process
+            //you would have to replace its spot
+            //when printing it out, you have to log state dead to none
+            //and another log state of none to run
+
+            if(showBool == 1){ //show command
+                if(argCount == 2 && token == NULL){ //if there no specified process
+                    for(int i = 0; i < 100; i++){ //loop through the struct array
+                        if(procArray[i] == NULL) break;
+
+                      fprintf(stdout, "0\t");
+                      fprintf(stdout, "%d", procArray[i].pid);
+                      fprintf(stdout, procArray[i].trace);
+                      fprintf(stdout, "T\t");
+                      fprintf(stdout, procArray[i].state);
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "%s\n", procArray[i].args);
+                    }
+                    
+                }
+                else if(argCount == 3 && token == NULL){ // if theres a specified process
+                    
+                }
+            } //end of show command
 
         } //end of the infinite while loop
 
@@ -397,6 +437,7 @@ int main(int argc, char *argv[]) {
     free(tempBuff);
     free(frogBuff);
     free(toadBuff);
+    free(procArray);
 
     return 0;
 }
