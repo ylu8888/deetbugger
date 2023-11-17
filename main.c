@@ -161,9 +161,9 @@ int main(int argc, char *argv[]) {
                     break;
                 }
                 else{
-                    log_shutdown();
-                    quitProg = 1;
-                    break;
+                    // log_shutdown();
+                     quitProg = 1;
+                    // break;
                 }
 
             }
@@ -474,6 +474,10 @@ int main(int argc, char *argv[]) {
                     
                 
                 }
+
+                log_shutdown();
+                exit(0);
+                break;
                 //once user hits control c, you get the sigint
                 //loop thru the array and send a kill signal to kill all the processes
                 //then quit and shutdown
@@ -482,6 +486,7 @@ int main(int argc, char *argv[]) {
         } //end of the infinite while loop
 
         if(quitProg == 1){
+            exit(0);
             break; //if the user typed 'quit' just end
         }
 
