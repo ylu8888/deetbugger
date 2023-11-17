@@ -29,7 +29,7 @@ void sig_handler(int signum){
             break;
         }
         else if(WIFEXITED(status)){
-            //log_signal(signum);
+            log_signal(signum);
             break;
             
         }
@@ -37,6 +37,7 @@ void sig_handler(int signum){
             
         }
         else if(WIFSIGNALED(status)){
+            //fprintf(stdout, "I AM EXITING");
             log_signal(signum);
             break;
         }
@@ -479,6 +480,7 @@ int main(int argc, char *argv[]) {
 
                 for(int i = 0; i < 100; i++){
                    if(procArray[i]->pid == 0) break; //when we run into a NULL index in our struct array 
+                    //fprintf(stdout, "DO I EVER MAKE IT THIS FOR LOOP");
                     int status;
                     waitpid(procArray[i]->pid, &status, 0); //wait for the child processes to terminate 
                     procArray[i]->state = "dead";
@@ -495,7 +497,7 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "%c\t", procArray[i]->trace);
                       fprintf(stdout, "%s", procArray[i]->state);
                       fprintf(stdout, "\t");
-                      fprintf(stdout, "\t");
+                      fprintf(stdout, "%s\t", "0x9");
                       fprintf(stdout, "%s\n", procArray[i]->args);
                 }
 
