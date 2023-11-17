@@ -29,6 +29,8 @@ void sig_handler(int signum){
             break;
         }
         else if(WIFEXITED(status)){
+            log_signal(signum);
+            break;
             
         }
         else if(WIFCONTINUED(status)){
@@ -162,10 +164,6 @@ int main(int argc, char *argv[]) {
                     quitProg = 1;
                     break;
                 }
-
-                //once user hits control c, you get the sigint
-                //loop thru the array and send a kill signal to kill all the processes
-                //then quit and shutdown
 
             }
             else if(strcmp(token, "show") == 0 || showBool == 1){
@@ -319,7 +317,7 @@ int main(int argc, char *argv[]) {
                     //looking for child process id
                     //look for index where child process occurs
                     for(int i = 0; i < 100; i++){ //loop through the struct array
-                       // fprintf(stdout, "%d\n", procArray[i]->pid); //defaulted on zero 0
+                       //fprintf(stdout, "%d\n", procArray[i]->pid); //defaulted on zero 0
                        //fprintf(stdout, "%c\t", procArray[i]->trace); //defaulted on empty space ' '
                        //fprintf(stdout, "%s\t", procArray[i]->state); //defaulted on NULL
                       // fprintf(stdout, "\t");
@@ -335,14 +333,6 @@ int main(int argc, char *argv[]) {
                             procArray[i]->args = toadBuff;
                            // procArray[i].exit //we can just leave this alone since we dont need to touch .exit unless its kill or dead
 
-                                //DEBUGGING TESTS ITS WORKING LOLLOOL
-                             // fprintf(stdout, "0\t");
-                             //  fprintf(stdout, "%d\t", procArray[i]->pid);
-                             //  fprintf(stdout, "%c\t", procArray[i]->trace);
-                             //  fprintf(stdout, "%s\t", procArray[i]->state);
-                             //  fprintf(stdout, "\t");
-                             //  fprintf(stdout, "%s\n", procArray[i]->args);
-                             //  fprintf(stdout, "%d\n", i);
                             break;
                             }
                         }
@@ -412,13 +402,8 @@ int main(int argc, char *argv[]) {
                 }
                 if(argCount == 2 && token == NULL){ //if there no specified process
                     for(int i = 0; i < 100; i++){ //loop through the struct array
-                     if(procArray[i]->pid == 0) break; //when we run into a NULL index in our struct array
-
-                     
-                             fprintf(stdout, "%d\t", i);
-                           
-                      
-                      
+                     if(procArray[i]->pid == 0) break; //when we run into a NULL index in our struct array 
+                      fprintf(stdout, "%d\t", i);
                       fprintf(stdout, "%d\t", procArray[i]->pid);
                       fprintf(stdout, "%c\t", procArray[i]->trace);
                       fprintf(stdout, "%s", procArray[i]->state);
@@ -427,7 +412,7 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "%s\n", procArray[i]->args);
                      
                     }
-                       log_prompt();
+                     log_prompt();
                      fprintf(stdout, "deet> ");
                      fflush(stdout); 
                     
@@ -460,7 +445,43 @@ int main(int argc, char *argv[]) {
                 }
             } //END OF THE SHOW COMMAND 
 
-            
+            if(quitProg == 1){ //START OF QUIT COMMAND
+                for(int i = 0; i < 100; i++){
+                   if(procArray[i]->pid == 0) break; //when we run into a NULL index in our struct array 
+                    procArray[i]->state = "killed";
+                    log_state_change(procArray[i]->pid, PSTATE_STOPPED, PSTATE_KILLED, 999); //log state from stopped to killed
+
+                    //send a kill signal to kill the process
+                    if(kill(SIGCHLD, procArray[i]->pid, SIGTERM) != 0){ 
+                        log_error(buffer); //send error msg with token
+                        fprintf(stdout, "?\n");
+                        log_prompt(); // issues another prompt
+                        fprintf(stdout, "deet> ");
+                        fflush(stdout); 
+                        break;
+                    }
+                    
+                }
+
+                for(int i = 0; i < 100; i++){
+                   if(procArray[i]->pid == 0) break; //when we run into a NULL index in our struct array 
+                    procArray[i]->state = "dead";
+                    log_state_change(procArray[i]->pid, PSTATE_KILLED, PSTATE_DEAD, 999); //log state from killed to dead
+                    
+                    if(kill(procArray[i]->pid, SIGTERM) == 0){
+                        log_error(buffer); //send error msg with token
+                        fprintf(stdout, "?\n");
+                        log_prompt(); // issues another prompt
+                        fprintf(stdout, "deet> ");
+                        fflush(stdout); 
+                        break;
+                    }
+                    
+                }
+                //once user hits control c, you get the sigint
+                //loop thru the array and send a kill signal to kill all the processes
+                //then quit and shutdown
+            } //END OF QUIT COMMAND
 
         } //end of the infinite while loop
 
@@ -520,8 +541,8 @@ int main(int argc, char *argv[]) {
 
      for (int i = 0; i < 100; ++i) {
             free(procArray[i]); //free the proc array inviidually each element
-            free(procArray[i]->state);
-            free(procArray[i]->args);
+            // free(procArray[i]->state);
+            // free(procArray[i]->args);
 
     }
 
