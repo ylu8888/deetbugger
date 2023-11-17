@@ -20,7 +20,7 @@ void sig_handler(int signum){
     int status;
     pid_t p;
    
-    while((p = waitpid(0, &status, WUNTRACED | WCONTINUED | WNOHAND)) > 0){ //loop that continues waiting for child processes until there are none left
+    while((p = waitpid(0, &status, WUNTRACED | WCONTINUED | WNOHANG)) > 0){ //loop that continues waiting for child processes until there are none left
         //waits for child process to change state and when child process is detected, check to see if it has STOPPED
         
         if(WIFSTOPPED(status)){//if stopped, then log the signal and then change state from running to stopped
@@ -56,10 +56,15 @@ int main(int argc, char *argv[]) {
     sigact.sa_flags = SA_RESTART; //system call is restarted when signal handler returns
     //set up a signal handler for the SIGCHLD signal using sigaction
     
-    //sigaction(SIGCHLD, &sigact, NULL)
-        
+       if(sigaction(SIGCHLD, &sigact, NULL) == -1){
+            log_error(buffer); //send error msg with token
+            fprintf(stdout, "?\n");
+            log_prompt(); // issues another prompt
+            fprintf(stdout, "deet> ");
+         
+        }; //check the return and if condition it 
 
-    PROCESS procArray[100]; //make an array of struct PROCESSES to store the users processes
+    //PROCESS procArray[100]; //make an array of struct PROCESSES to store the users processes
     int numProc = 0; //count the number of processes the user makes
 
     for(;;){ //infinite while loop
@@ -303,15 +308,6 @@ int main(int argc, char *argv[]) {
 
                       log_prompt(); // issues another prompt
 
-                        if(sigaction(SIGCHLD, &sigact, NULL) == -1){
-                            log_error(buffer); //send error msg with token
-                            fprintf(stdout, "?\n");
-                            log_prompt(); // issues another prompt
-                            fprintf(stdout, "deet> ");
-                            fflush(stdout); 
-                            break;
-                        }; //check the return and if condition it
-
                   // log_state_change(p, PSTATE_RUNNING, PSTATE_STOPPED, 999); //already being done in the signal handler func
 
                     //the PTRACEME will send a SIGCHLD which gets caught by the signal handler function 
@@ -324,9 +320,10 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "\t");
                       fprintf(stdout, "%s\n", toadBuff);
 
-                    for(int i = 0; i < procArray; i++){ //loop through the struct array
-                        if(procArray[i] != NULL){ //the first array index where its not NULL
-                        }
+                    for(int i = 0; i < 100; i++){ //loop through the struct array
+                        // if(procArray[i] != NULL){ //the first array index where its not NULL
+                        //     break;
+                        // }
                     }
 
                      log_prompt();
