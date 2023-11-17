@@ -463,6 +463,18 @@ int main(int argc, char *argv[]) {
                     }
                     
                 }
+
+                for(int i = 0; i < 100; i++){
+                    if(procArray[i]->pid == 0) break;
+
+                    fprintf(stdout, "%d\t", i);
+                      fprintf(stdout, "%d\t", procArray[i]->pid);
+                      fprintf(stdout, "%c\t", procArray[i]->trace);
+                      fprintf(stdout, "%s", procArray[i]->state);
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "%s\n", procArray[i]->args);
+                }
                 //sigchild, pid, sigkill
 
                 for(int i = 0; i < 100; i++){
@@ -473,6 +485,18 @@ int main(int argc, char *argv[]) {
                     log_state_change(procArray[i]->pid, PSTATE_KILLED, PSTATE_DEAD, 999); //log state from killed to dead
                     
                 
+                }
+
+                for(int i = 0; i < 100; i++){
+                    if(procArray[i]->pid == 0) break;
+
+                    fprintf(stdout, "%d\t", i);
+                      fprintf(stdout, "%d\t", procArray[i]->pid);
+                      fprintf(stdout, "%c\t", procArray[i]->trace);
+                      fprintf(stdout, "%s", procArray[i]->state);
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "%s\n", procArray[i]->args);
                 }
 
                 log_shutdown();
