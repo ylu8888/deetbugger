@@ -248,12 +248,12 @@ int main(int argc, char *argv[]) {
                 progName = strdup(token);//copy echo into progName as the first one
             }
 
-            char *argv[frogCount + 1]; //argv array to store in execvp
+            char *arguv[frogCount + 1]; //argv array to store in execvp
             if(argCount > 2){ //only want to grab the arguments after echo aka progName
-                argv[argCount - 2] = token;
+                arguv[argCount - 2] = token;
                 //fprintf(stdout, "%s\n", argv[argCount - 2]); //ITS WORKING
             }
-            argv[frogCount] = NULL; //set the last element of argv to NULL as per execvp
+            arguv[frogCount] = NULL; //set the last element of argv to NULL as per execvp
 
             if(runBool == 1 && token == NULL){ //only if run arguments are valid
                pid_t p = fork(); 
@@ -262,7 +262,7 @@ int main(int argc, char *argv[]) {
                     dup2(2, 1); //close stdout and redirect to stderr
                     ptrace(PTRACE_TRACEME, 0, NULL, NULL);  //ptrace will call sigstop and the parent will get a SIGCHLD
 
-                    int execRes = execvp(progName, argv); //argv is array with [a, b, c, NULL]
+                    int execRes = execvp(progName, arguv); //argv is array with [a, b, c, NULL]
                     if(execRes == -1){ //if execvp returns -1 as error, just log to terminal
                         log_error(buffer); //send error msg with token
                         fprintf(stdout, "?\n");
