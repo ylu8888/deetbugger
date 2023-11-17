@@ -224,6 +224,7 @@ int main(int argc, char *argv[]) {
             token = strtok(NULL, " "); //get the next token
             argCount++; //count the num of arguments
 
+            //ARGUMENT COUNT ERROR CHECKER
             if(runBool == 1 && argCount == 2 && token == NULL){ //if run has no arguments, it is an error
                 log_error(buffer); //send error msg with token
                 fprintf(stdout, "?\n");
@@ -272,8 +273,9 @@ int main(int argc, char *argv[]) {
                 fflush(stdout); 
                 break;
                 }
-            }
+            } //END OF ARGUMENT COUNT ERROR CHECKING
 
+            //START OF RUN COMMAND 
             char* progName = NULL;
             if(runBool == 1 && argCount == 2){ //GRAB THE name of the program AFTER 'run' for ex: grabbing echo from run echo a b c 
                 progName = strdup(token);//copy echo into progName as the first one
@@ -308,31 +310,11 @@ int main(int argc, char *argv[]) {
                       log_state_change(p, PSTATE_NONE, PSTATE_RUNNING, 999); //only log state changes in the parent, 999 is my own status number
 
                     //PRINT out the status line for when the process STOPS
-                      fprintf(stdout, "0\t");
-                      fprintf(stdout, "%d", p);
-                      fprintf(stdout, "\t");
-                      fprintf(stdout, "T\t");
-                      fprintf(stdout, "running\t");
-                      fprintf(stdout, "\t");
-                      fprintf(stdout, "%s\n", toadBuff);
 
-                      log_prompt(); // issues another prompt
-
-                  // log_state_change(p, PSTATE_RUNNING, PSTATE_STOPPED, 999); //already being done in the signal handler func
-
-                    //the PTRACEME will send a SIGCHLD which gets caught by the signal handler function 
-                    //which logs the signal 17 and then the parent function will print this status line below
-                      fprintf(stdout, "0\t");
-                      fprintf(stdout, "%d", p);
-                      fprintf(stdout, "\t");
-                      fprintf(stdout, "T\t");
-                      fprintf(stdout, "stopped\t");
-                      fprintf(stdout, "\t");
-                      fprintf(stdout, "%s\n", toadBuff);
-
-                      // && procArray[i]->trace != '\0'
-
-
+                    //To get the deetID
+                    //loop thru the array
+                    //looking for child process id
+                    //look for index where child process occurs
                     for(int i = 0; i < 100; i++){ //loop through the struct array
                        // fprintf(stdout, "%d\n", procArray[i]->pid); //defaulted on zero 0
                        //fprintf(stdout, "%c\t", procArray[i]->trace); //defaulted on empty space ' '
@@ -344,7 +326,7 @@ int main(int argc, char *argv[]) {
                         if((procArray[i] != NULL) || strcmp(procArray[i]->state, "dead") == 0){ //the first array index where its not NULL like its not even initialized yet
                             //OR if the state of the proc array is dead, then we replace it
                             if(procArray[i]->pid == 0){ //ONLY IF THE PROCARRAY IS NOT DEFAULTED ON NULL
-                                procArray[i]->pid = p;
+                            procArray[i]->pid = p;
                             procArray[i]->trace = 'T';
                             procArray[i]->state = "stopped";
                             procArray[i]->args = toadBuff;
@@ -363,6 +345,43 @@ int main(int argc, char *argv[]) {
                         }
                     }
 
+                    for(int i = 0; i < 100; i++){
+                        if(procArray[i]->pid == 0) break; //IF WE RUN INTO A NULL INDEX IN ARRAY
+                        if(procArray[i]->pid == p){
+                             fprintf(stdout, "%d\t", i);
+                            break;
+                        }
+                    }
+                     
+                      fprintf(stdout, "%d", p);
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "T\t");
+                      fprintf(stdout, "running\t");
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "%s\n", toadBuff);
+
+                      log_prompt(); // issues another prompt
+
+                  // log_state_change(p, PSTATE_RUNNING, PSTATE_STOPPED, 999); //already being done in the signal handler func
+
+                    //the PTRACEME will send a SIGCHLD which gets caught by the signal handler function 
+                    //which logs the signal 17 and then the parent function will print this status line below
+                      for(int i = 0; i < 100; i++){
+                        if(procArray[i]->pid == 0) break; //IF WE RUN INTO A NULL INDEX IN ARRAY
+                        if(procArray[i]->pid == p){
+                             fprintf(stdout, "%d\t", i);
+                            break;
+                        }
+                     }
+                      fprintf(stdout, "%d", p);
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "T\t");
+                      fprintf(stdout, "stopped\t");
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "%s\n", toadBuff);
+
+                      // && procArray[i]->trace != '\0'
+
                      log_prompt();
                      fprintf(stdout, "deet> ");
                      fflush(stdout); 
@@ -376,7 +395,7 @@ int main(int argc, char *argv[]) {
                     fflush(stdout); 
                     break;
                 }
-           }// end of the RUN command
+           }// END OF THE RUN COMMAND
 
             //go throu array if u see a dead process
             //if u want to put a new process in the spot of the dead process
@@ -384,16 +403,22 @@ int main(int argc, char *argv[]) {
             //when printing it out, you have to log state dead to none
             //and another log state of none to run
 
-            if(showBool == 1){ //show command
+            if(showBool == 1){ //START OF THE SHOW COMMAND
                 
                 if(token != NULL){
                     argNum = atoi(token); //get the STRING TO NUM from the argument, for ex "show 1" processes the '1' string and converts to int 1
                 }
                 if(argCount == 2 && token == NULL){ //if there no specified process
                     for(int i = 0; i < 100; i++){ //loop through the struct array
-                        if(procArray[i]->pid == 0) break;
+                     if(procArray[i]->pid == 0) break; //when we run into a NULL index in our struct array
 
-                      fprintf(stdout, "0\t");
+                      for(int i = 0; i < 100; i++){
+                        if(procArray[i]->pid == 0) break; //IF WE RUN INTO A NULL INDEX IN ARRAY
+                        if(procArray[i]->pid == p){
+                             fprintf(stdout, "%d\t", i);
+                            break;
+                        }
+                      }
                       fprintf(stdout, "%d\t", procArray[i]->pid);
                       fprintf(stdout, "%c\t", procArray[i]->trace);
                       fprintf(stdout, "%s", procArray[i]->state);
@@ -412,7 +437,13 @@ int main(int argc, char *argv[]) {
                    // fprintf(stdout, "%d", argNum);
                    // JUST PRINT OUT THE PROCESS FROM PROCARRAY AT THAT ARGUMENT INDEX
                     if(procArray[argNum]->pid != 0){ //only print this if the show 'argNum ' is VALID
-                     fprintf(stdout, "0\t");
+                      for(int i = 0; i < 100; i++){
+                        if(procArray[i]->pid == 0) break; //IF WE RUN INTO A NULL INDEX IN ARRAY
+                        if(procArray[i]->pid == p){
+                             fprintf(stdout, "%d\t", i);
+                            break;
+                        }
+                      }
                       fprintf(stdout, "%d\t", procArray[argNum]->pid);
                       fprintf(stdout, "%c\t", procArray[argNum]->trace);
                       fprintf(stdout, "%s\t", procArray[argNum]->state);
@@ -432,8 +463,9 @@ int main(int argc, char *argv[]) {
                   }
                     
                 }
+            } //END OF THE SHOW COMMAND 
 
-            } //end of show command
+            
 
         } //end of the infinite while loop
 
