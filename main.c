@@ -114,6 +114,7 @@ int main(int argc, char *argv[]) {
         //these are booleans to see which command was run by user
         int quitProg = 0, showBool = 0, runBool = 0, stopBool = 0, contBool = 0, releaseBool = 0, waitBool = 0, killBool = 0, peekBool = 0, pokeBool = 0, btBool = 0;
         int argCount = 1; //needs to start at 1 cause we already got a token out
+        int argNum = 0; //for getting 'show 1'
 
         //iterate through the buffer to see what the user input and checkk if its a valid input or not
         //the user input should match the terminal commands
@@ -293,7 +294,7 @@ int main(int argc, char *argv[]) {
                     dup2(2, 1); //close stdout and redirect to stderr
                     ptrace(PTRACE_TRACEME, 0, NULL, NULL);  //ptrace will call sigstop and the parent will get a SIGCHLD
 
-                    int execRes = execvp(progName, arguv); //argv is array with [a, b, c, NULL]
+                    int execRes = execvp(progName, arguv); //arguv is array with [a, b, c, NULL]
                     if(execRes == -1){ //if execvp returns -1 as error, just log to terminal
                         log_error(buffer); //send error msg with token
                         fprintf(stdout, "?\n");
@@ -362,8 +363,6 @@ int main(int argc, char *argv[]) {
                         }
                     }
 
-
-
                      log_prompt();
                      fprintf(stdout, "deet> ");
                      fflush(stdout); 
@@ -386,6 +385,10 @@ int main(int argc, char *argv[]) {
             //and another log state of none to run
 
             if(showBool == 1){ //show command
+                
+                if(token != NULL){
+                    argNum = atoi(token); //get the STRING TO NUM from the argument, for ex "show 1" processes the '1' string and converts to int 1
+                }
                 if(argCount == 2 && token == NULL){ //if there no specified process
                     for(int i = 0; i < 100; i++){ //loop through the struct array
                         if(procArray[i]->pid == 0) break;
@@ -399,14 +402,37 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "%s\n", procArray[i]->args);
                      
                     }
-                    log_prompt();
+                       log_prompt();
                      fprintf(stdout, "deet> ");
                      fflush(stdout); 
                     
                 }
                 else if(argCount == 3 && token == NULL){ // if theres a specified process
+                    //fprintf(stdout, "MADE IT HERE");
+                   // fprintf(stdout, "%d", argNum);
+                   // JUST PRINT OUT THE PROCESS FROM PROCARRAY AT THAT ARGUMENT INDEX
+                    if(procArray[argNum]->pid != 0){ //only print this if the show 'argNum ' is VALID
+                     fprintf(stdout, "0\t");
+                      fprintf(stdout, "%d\t", procArray[argNum]->pid);
+                      fprintf(stdout, "%c\t", procArray[argNum]->trace);
+                      fprintf(stdout, "%s\t", procArray[argNum]->state);
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "%s\n", procArray[argNum]->args);
+
+                      log_prompt();
+                     fprintf(stdout, "deet> ");
+                     fflush(stdout); 
+                  } else { //if it does show 3 and the 3rd index is NULL, then return errs
+                    log_error(buffer); //send error msg with token
+                    fprintf(stdout, "?\n");
+                    log_prompt(); // issues another prompt
+                    fprintf(stdout, "deet> ");
+                    fflush(stdout); 
+                    break;
+                  }
                     
                 }
+
             } //end of show command
 
         } //end of the infinite while loop
