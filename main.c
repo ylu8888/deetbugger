@@ -19,26 +19,37 @@ void sig_handler(int signum){
     //when u do sigaction, it calls these handlers
     int status;
     pid_t p;
+   // fprintf(stdout, "IM IN THE SIGNAL HANDLER\n");
+
    
-    while((p = waitpid(0, &status, WUNTRACED | WCONTINUED | WNOHANG)) > 0){ //loop that continues waiting for child processes until there are none left
+    while((p = waitpid(0, &status, WUNTRACED | WCONTINUED | WNOHANG)) != 0){ //loop that continues waiting for child processes until there are none left
         //waits for child process to change state and when child process is detected, check to see if it has STOPPED
+       // fprintf(stdout, "IM IN THE WHILE LOOOOP\n");
+
         
         if(WIFSTOPPED(status)){//if stopped, then log the signal and then change state from running to stopped
+           // fprintf(stdout, "I AM STOPPED\n");
             log_signal(signum); //This function must be called as the first action in the signal handler
             log_state_change(p, PSTATE_RUNNING, PSTATE_STOPPED, 999);
             break;
         }
         else if(WIFEXITED(status)){
+           // fprintf(stdout, "I AM EXITINGGG\n");
             log_signal(signum);
             break;
             
         }
         else if(WIFCONTINUED(status)){
+           // fprintf(stdout, "I AM CONTINUING\n");
+            break;
             
         }
         else if(WIFSIGNALED(status)){
-            //fprintf(stdout, "I AM EXITING");
+          //  fprintf(stdout, "I AM SIGNALEDDD\n");
             log_signal(signum);
+            break;
+        }
+        else{
             break;
         }
     }
@@ -451,23 +462,27 @@ int main(int argc, char *argv[]) {
                 for(int i = 0; i < 100; i++){
                    if(procArray[i]->pid == 0) break; //when we run into a NULL index in our struct array 
                     procArray[i]->state = "killed";
-                    log_state_change(procArray[i]->pid, PSTATE_STOPPED, PSTATE_KILLED, 999); //log state from stopped to killed
+                  // log_state_change(procArray[i]->pid, PSTATE_STOPPED, PSTATE_KILLED, 999); //log state from stopped to killed
 
                     //send a kill signal to kill the process
-                    if(kill(procArray[i]->pid, SIGKILL) != 0){ 
+                    int killRes = kill(procArray[i]->pid, SIGKILL);
+                    if(killRes == 0){
+                      // fprintf(stdout, "MADE IT INTO KILL");
+                        log_state_change(procArray[i]->pid, PSTATE_STOPPED, PSTATE_KILLED, 999);
+                    } else if(killRes != 0){
                         log_error(buffer); //send error msg with token
                         fprintf(stdout, "?\n");
                         log_prompt(); // issues another prompt
                         fprintf(stdout, "deet> ");
                         fflush(stdout); 
                         break;
-                    }
                     
+                    }
+                   
                 }
 
                 for(int i = 0; i < 100; i++){
                     if(procArray[i]->pid == 0) break;
-
                     fprintf(stdout, "%d\t", i);
                       fprintf(stdout, "%d\t", procArray[i]->pid);
                       fprintf(stdout, "%c\t", procArray[i]->trace);
@@ -501,8 +516,8 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "%s\n", procArray[i]->args);
                 }
 
-                log_shutdown();
-                exit(0);
+                // log_shutdown();
+                // exit(0);
                 break;
                 //once user hits control c, you get the sigint
                 //loop thru the array and send a kill signal to kill all the processes
@@ -512,6 +527,7 @@ int main(int argc, char *argv[]) {
         } //end of the infinite while loop
 
         if(quitProg == 1){
+            log_shutdown();
             exit(0);
             break; //if the user typed 'quit' just end
         }
