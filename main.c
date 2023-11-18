@@ -36,6 +36,7 @@ void sig_handler(int signum){
         else if(WIFEXITED(status)){
            // fprintf(stdout, "I AM EXITINGGG\n");
             log_signal(signum);
+            log_state_change(p, PSTATE_RUNNING, PSTATE_DEAD, 999);
             break;
             
         }
@@ -133,6 +134,8 @@ int main(int argc, char *argv[]) {
         int quitProg = 0, showBool = 0, runBool = 0, stopBool = 0, contBool = 0, releaseBool = 0, waitBool = 0, killBool = 0, peekBool = 0, pokeBool = 0, btBool = 0;
         int argCount = 1; //needs to start at 1 cause we already got a token out
         int argNum = 0; //for getting 'show 1'
+        char* progName = NULL;
+        char *arguv[frogCount + 1];
 
         //iterate through the buffer to see what the user input and checkk if its a valid input or not
         //the user input should match the terminal commands
@@ -290,17 +293,19 @@ int main(int argc, char *argv[]) {
             } //END OF ARGUMENT COUNT ERROR CHECKING
 
             //START OF RUN COMMAND 
-            char* progName = NULL;
+            
             if(runBool == 1 && argCount == 2){ //GRAB THE name of the program AFTER 'run' for ex: grabbing echo from run echo a b c 
                 progName = strdup(token);//copy echo into progName as the first one
+
             }
 
-            char *arguv[frogCount + 1]; //argv array to store in execvp
             if(argCount > 2){ //only want to grab the arguments after echo aka progName
-                arguv[argCount - 2] = token;
-                //fprintf(stdout, "%s\n", argv[argCount - 2]); //ITS WORKING
+                arguv[argCount - 3] = token;
+                //fprintf(stdout, "%s\n", arguv[argCount - 3]); //ITS WORKING
             }
             arguv[frogCount] = NULL; //set the last element of argv to NULL as per execvp
+
+            //fprintf(stdout, "%d", frogCount);
 
             if(runBool == 1 && token == NULL){ //only if run arguments are valid
                p = fork(); 
@@ -312,11 +317,15 @@ int main(int argc, char *argv[]) {
 
                     int execRes = execvp(progName, arguv); //arguv is array with [a, b, c, NULL]
                     if(execRes == -1){ //if execvp returns -1 as error, just log to terminal
-                        log_error(buffer); //send error msg with token
-                        fprintf(stdout, "?\n");
-                        log_prompt(); // issues another prompt
-                        fprintf(stdout, "deet> ");
-                        fflush(stdout); 
+                        // log_error(buffer); //send error msg with token
+                        // fprintf(stdout, "?\n");
+                        // log_prompt(); // issues another prompt
+                        // fprintf(stdout, "deet> ");
+                        // fflush(stdout); 
+                        //perror("execvp");
+                        
+                      //  fprintf(stdout, "IM IN THE EXECRES");
+                        exit(EXIT_SUCCESS);
 
                     }
                 }
@@ -358,7 +367,7 @@ int main(int argc, char *argv[]) {
                             break;
                         }
                     }
-                     
+                    fprintf(stdout, "%d", p);
                       fprintf(stdout, "\t");
                       fprintf(stdout, "T\t");
                       fprintf(stdout, "running\t");
@@ -378,6 +387,29 @@ int main(int argc, char *argv[]) {
                             break;
                         }
                      }
+
+                     int status;
+                     int exitBool = 0;
+                     while((p = waitpid(0, &status, WUNTRACED | WCONTINUED | WNOHANG)) != 0){ 
+                     if(WIFEXITED(status)){
+                        exitBool = 1;
+            fprintf(stdout, "I AM EXITINGGG\n");
+                       fprintf(stdout, "%d", p);
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "T\t");
+                      fprintf(stdout, "dead\t");
+                      fprintf(stdout, "%s\t", "0x9");
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "%s\n", toadBuff);
+
+                       
+                        break;
+                        
+                    }
+                }
+
+                if(exitBool == 1) break;
+
                       fprintf(stdout, "%d", p);
                       fprintf(stdout, "\t");
                       fprintf(stdout, "T\t");
@@ -507,7 +539,7 @@ int main(int argc, char *argv[]) {
                 for(int i = 0; i < 100; i++){
                     if(procArray[i]->pid == 0) break;
 
-                    fprintf(stdout, "%d\t", i);
+                      fprintf(stdout, "%d\t", i);
                       fprintf(stdout, "%d\t", procArray[i]->pid);
                       fprintf(stdout, "%c\t", procArray[i]->trace);
                       fprintf(stdout, "%s", procArray[i]->state);
