@@ -6,55 +6,7 @@
 #include <unistd.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
-
-typedef struct process {
-    pid_t pid;
-    char trace;
-    char* state;
-    char* args;
-    int exit;
-} PROCESS;
-
-void sig_handler(int signum){
-    //when u do sigaction, it calls these handlers
-    int status;
-    pid_t p;
-   // fprintf(stdout, "IM IN THE SIGNAL HANDLER\n");
-
-   
-    while((p = waitpid(0, &status, WUNTRACED | WCONTINUED | WNOHANG)) != 0){ //loop that continues waiting for child processes until there are none left
-        //waits for child process to change state and when child process is detected, check to see if it has STOPPED
-       // fprintf(stdout, "IM IN THE WHILE LOOOOP\n");
-
-        
-        if(WIFSTOPPED(status)){//if stopped, then log the signal and then change state from running to stopped
-           // fprintf(stdout, "I AM STOPPED\n");
-            log_signal(signum); //This function must be called as the first action in the signal handler
-            log_state_change(p, PSTATE_RUNNING, PSTATE_STOPPED, 999);
-            break;
-        }
-        else if(WIFEXITED(status)){
-           // fprintf(stdout, "I AM EXITINGGG\n");
-            log_signal(signum);
-            log_state_change(p, PSTATE_RUNNING, PSTATE_DEAD, 999);
-            break;
-            
-        }
-        else if(WIFCONTINUED(status)){
-           // fprintf(stdout, "I AM CONTINUING\n");
-            break;
-            
-        }
-        else if(WIFSIGNALED(status)){
-          //  fprintf(stdout, "I AM SIGNALEDDD\n");
-            log_signal(signum);
-            break;
-        }
-        else{
-            break;
-        }
-    }
-}
+#include "helper.h"
 
 int main(int argc, char *argv[]) {
     log_startup(); //starts up deets
@@ -312,7 +264,7 @@ int main(int argc, char *argv[]) {
 
                 if(p == 0){ //child process has been created
                     numProc++; //keep track of the number of child processes being created
-                    dup2(2, 1); //close stdout and redirect to stderr
+                     dup2(2, 1); //close stdout and redirect to stderr
                     ptrace(PTRACE_TRACEME, 0, NULL, NULL);  //ptrace will call sigstop and the parent will get a SIGCHLD
 
                     int execRes = execvp(progName, arguv); //arguv is array with [a, b, c, NULL]
@@ -338,6 +290,7 @@ int main(int argc, char *argv[]) {
                     //loop thru the array
                     //looking for child process id
                     //look for index where child process occurs
+                    
                     for(int i = 0; i < 100; i++){ //loop through the struct array
                        //fprintf(stdout, "%d\n", procArray[i]->pid); //defaulted on zero 0
                        //fprintf(stdout, "%c\t", procArray[i]->trace); //defaulted on empty space ' '
@@ -387,28 +340,6 @@ int main(int argc, char *argv[]) {
                             break;
                         }
                      }
-
-                     int status;
-                     int exitBool = 0;
-                     while((p = waitpid(0, &status, WUNTRACED | WCONTINUED | WNOHANG)) != 0){ 
-                     if(WIFEXITED(status)){
-                        exitBool = 1;
-            fprintf(stdout, "I AM EXITINGGG\n");
-                       fprintf(stdout, "%d", p);
-                      fprintf(stdout, "\t");
-                      fprintf(stdout, "T\t");
-                      fprintf(stdout, "dead\t");
-                      fprintf(stdout, "%s\t", "0x9");
-                      fprintf(stdout, "\t");
-                      fprintf(stdout, "%s\n", toadBuff);
-
-                       
-                        break;
-                        
-                    }
-                }
-
-                if(exitBool == 1) break;
 
                       fprintf(stdout, "%d", p);
                       fprintf(stdout, "\t");
@@ -555,6 +486,14 @@ int main(int argc, char *argv[]) {
                 //loop thru the array and send a kill signal to kill all the processes
                 //then quit and shutdown
             } //END OF QUIT COMMAND
+
+            if(contBool == 1 && token == NULL){
+                //kill then get the pid, then send a ptraceCONT
+                if (ptrace(PTRACE_CONT, p, NULL, NULL) == 0){
+                    perror("ptrace");
+                    // Handle the error as needed
+                }
+            }
 
         } //end of the infinite while loop
 
