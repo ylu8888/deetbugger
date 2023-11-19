@@ -264,7 +264,7 @@ int main(int argc, char *argv[]) {
 
                 if(p == 0){ //child process has been created
                     numProc++; //keep track of the number of child processes being created
-                     dup2(2, 1); //close stdout and redirect to stderr
+                    dup2(2, 1); //close stdout and redirect to stderr
                     ptrace(PTRACE_TRACEME, 0, NULL, NULL);  //ptrace will call sigstop and the parent will get a SIGCHLD
 
                     int execRes = execvp(progName, arguv); //arguv is array with [a, b, c, NULL]
@@ -372,6 +372,7 @@ int main(int argc, char *argv[]) {
             //and another log state of none to run
 
             if(showBool == 1){ //START OF THE SHOW COMMAND
+                int emptyProcBool = 0;
                 
                 if(token != NULL){
                     argNum = atoi(token); //get the STRING TO NUM from the argument, for ex "show 1" processes the '1' string and converts to int 1
@@ -379,6 +380,7 @@ int main(int argc, char *argv[]) {
                 if(argCount == 2 && token == NULL){ //if there no specified process
                     for(int i = 0; i < 100; i++){ //loop through the struct array
                      if(procArray[i]->pid == 0) break; //when we run into a NULL index in our struct array 
+                     emptyProcBool = 1;
                       fprintf(stdout, "%d\t", i);
                       fprintf(stdout, "%d\t", procArray[i]->pid);
                       fprintf(stdout, "%c\t", procArray[i]->trace);
@@ -387,6 +389,14 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "\t");
                       fprintf(stdout, "%s\n", procArray[i]->args);
                      
+                    }
+                    if(emptyProcBool == 0){ //if the proc array is empty and the user types show, then error
+                        log_error(buffer); //send error msg with token
+                        fprintf(stdout, "?\n");
+                        log_prompt(); // issues another prompt
+                        fprintf(stdout, "deet> ");
+                        fflush(stdout); 
+                        break;
                     }
                      log_prompt();
                      fprintf(stdout, "deet> ");
@@ -487,8 +497,24 @@ int main(int argc, char *argv[]) {
                 //then quit and shutdown
             } //END OF QUIT COMMAND
 
-            if(contBool == 1 && token == NULL){
+            if(contBool == 1){
                 //kill then get the pid, then send a ptraceCONT
+
+                if(token != NULL){
+                    argNum = atoi(token); //get the STRING TO NUM from the argument, for ex "show 1" processes the '1' string and converts to int 1
+                }
+
+                if(procArray[argNum]->pid == 0){  //IF THE ARGUMENT IS INVALID
+                    log_error(buffer); //send error msg with token
+                    fprintf(stdout, "?\n");
+                    log_prompt(); // issues another prompt
+                    fprintf(stdout, "deet> ");
+                    fflush(stdout); 
+                    break;
+                }
+                
+
+                //will never go inside WIFCONTINUED
                 if (ptrace(PTRACE_CONT, p, NULL, NULL) == 0){
                     perror("ptrace");
                     // Handle the error as needed
