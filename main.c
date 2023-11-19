@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
         int argCount = 1; //needs to start at 1 cause we already got a token out
         int argNum = 0; //for getting 'show 1'
         char* progName = NULL;
-        char *arguv[frogCount + 1];
+        char *arguv[frogCount + 2];
 
         //iterate through the buffer to see what the user input and checkk if its a valid input or not
         //the user input should match the terminal commands
@@ -252,14 +252,21 @@ int main(int argc, char *argv[]) {
             }
 
             if(argCount > 2){ //only want to grab the arguments after echo aka progName
-                arguv[argCount - 3] = token;
+                arguv[argCount - 2] = token;
                 //fprintf(stdout, "%s\n", arguv[argCount - 3]); //ITS WORKING
             }
-            arguv[frogCount] = NULL; //set the last element of argv to NULL as per execvp
+            arguv[0] = progName;
+            arguv[frogCount + 1] = NULL; //set the last element of argv to NULL as per execvp
+
+            //argv [echo, a, b, c, NULL]
 
             //fprintf(stdout, "%d", frogCount);
 
             if(runBool == 1 && token == NULL){ //only if run arguments are valid
+               //  for(int i = 0; i < 4; i++){
+               //  fprintf(stdout, "%s", arguv[i]);
+               // }
+
                p = fork(); 
 
                 if(p == 0){ //child process has been created
