@@ -40,6 +40,8 @@ int main(int argc, char *argv[]) {
 
     pid_t p = 0; //makke pid global so can access everywhere
 
+    pid_t tempPid = 0;
+
 
     for(;;){ //infinite while loop
        // fprintf(stdout, "deet> ");
@@ -284,9 +286,11 @@ int main(int argc, char *argv[]) {
                         //perror("execvp");
                         
                       //  fprintf(stdout, "IM IN THE EXECRES");
+
                         exit(EXIT_SUCCESS);
 
                     }
+
                 }
                 if(p > 0){ //it returned to parent 
                       log_state_change(p, PSTATE_NONE, PSTATE_RUNNING, 999); //only log state changes in the parent, 999 is my own status number
@@ -297,6 +301,7 @@ int main(int argc, char *argv[]) {
                     //loop thru the array
                     //looking for child process id
                     //look for index where child process occurs
+                    tempPid = p;
                     
                     for(int i = 0; i < 100; i++){ //loop through the struct array
                        //fprintf(stdout, "%d\n", procArray[i]->pid); //defaulted on zero 0
@@ -538,6 +543,12 @@ int main(int argc, char *argv[]) {
 
                         log_prompt(); // issues another prompt
 
+                        int status;
+                       // fprintf(stdout, "%d", tempPid);
+                        waitpid(tempPid, &status, 0);
+
+                        log_state_change(p, PSTATE_RUNNING, PSTATE_DEAD, 999);
+                        log_prompt(); // issues another prompt
                         //PRINT THE DEAD STATUS LINE
                         fprintf(stdout, "%d\t", argNum);
                       fprintf(stdout, "%d\t", procArray[argNum]->pid);
@@ -545,7 +556,6 @@ int main(int argc, char *argv[]) {
                       fprintf(stdout, "dead\t");
                       fprintf(stdout, "0x0\t");
                       fprintf(stdout, "%s\n", procArray[argNum]->args);
-
 
                         fprintf(stdout, "deet> ");
                         fflush(stdout); 
