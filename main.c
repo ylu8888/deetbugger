@@ -497,7 +497,7 @@ int main(int argc, char *argv[]) {
                 //then quit and shutdown
             } //END OF QUIT COMMAND
 
-            if(contBool == 1){
+            if(contBool == 1){ //START OF CONT COMMAND
                 //kill then get the pid, then send a ptraceCONT
 
                 if(token != NULL){
@@ -514,12 +514,47 @@ int main(int argc, char *argv[]) {
                 }
                 
 
-                //will never go inside WIFCONTINUED
-                if (ptrace(PTRACE_CONT, p, NULL, NULL) == 0){
-                    perror("ptrace");
-                    // Handle the error as needed
+                if(token == NULL){
+                    //will never go inside WIFCONTINUED
+                    int contRes = ptrace(PTRACE_CONT, p, NULL, NULL);
+                    if (contRes == 0){
+                       // perror("ptrace");
+                        log_state_change(p, PSTATE_STOPPED, PSTATE_RUNNING, 999);
+
+                      //PRINT THE RUNNING STATUS LINE
+                      fprintf(stdout, "%d\t", argNum);
+                      fprintf(stdout, "%d\t", procArray[argNum]->pid);
+                      fprintf(stdout, "%c\t", procArray[argNum]->trace);
+                      fprintf(stdout, "running\t");
+                      fprintf(stdout, "\t");
+                      fprintf(stdout, "%s\n", procArray[argNum]->args);
+
+                        log_prompt(); // issues another prompt
+
+                        //PRINT THE DEAD STATUS LINE
+                        fprintf(stdout, "%d\t", argNum);
+                      fprintf(stdout, "%d\t", procArray[argNum]->pid);
+                      fprintf(stdout, "%c\t", procArray[argNum]->trace);
+                      fprintf(stdout, "dead\t");
+                      fprintf(stdout, "0x0\t");
+                      fprintf(stdout, "%s\n", procArray[argNum]->args);
+
+
+                        fprintf(stdout, "deet> ");
+                        fflush(stdout); 
+                        break;
+                        // Handle the error as needed
+                    } else if(contRes == -1){
+                        log_error(buffer); //send error msg with token
+                        fprintf(stdout, "?\n");
+                        log_prompt(); // issues another prompt
+                        fprintf(stdout, "deet> ");
+                        fflush(stdout); 
+                        break;
+
+                    }
                 }
-            }
+            }//END OF CONT COMMAND
 
         } //end of the infinite while loop
 
